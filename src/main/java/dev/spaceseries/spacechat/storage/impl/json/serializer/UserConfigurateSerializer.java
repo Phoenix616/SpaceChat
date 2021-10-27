@@ -13,6 +13,7 @@ import org.spongepowered.configurate.serialize.TypeSerializer;
 import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -66,7 +67,14 @@ public class UserConfigurateSerializer implements TypeSerializer<User> {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        return new User(plugin, UUID.fromString(uuidString), username, date, subscribedChannels);
+        // ignored users
+        Map<UUID, String> ignored = ((Map<String, String>) node.node("ignored").get(Map.class)).entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> UUID.fromString(e.getKey()),
+                        Map.Entry::getValue
+                ));
+
+        return new User(plugin, UUID.fromString(uuidString), username, date, subscribedChannels, ignored);
     }
 
     /**
@@ -91,5 +99,9 @@ public class UserConfigurateSerializer implements TypeSerializer<User> {
         node.node("subscribedChannels").setList(String.class, obj.getSubscribedChannels().stream()
                 .map(Channel::getHandle)
                 .collect(Collectors.toList()));
+
+        for (Map.Entry<UUID, String> entry : obj.getIgnored().entrySet()) {
+            node.node("ignored").node(entry.getKey().toString()).set(entry.getValue());
+        }
     }
 }

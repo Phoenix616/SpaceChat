@@ -18,6 +18,7 @@ public class SpaceChatConfigKeys {
     public static ConfigKey<String> STORAGE_MYSQL_TABLES_CHAT_LOGS = key(c -> c.getString("storage.mysql.tables.chat-logs", null));
     public static ConfigKey<String> STORAGE_MYSQL_TABLES_USERS = key(c -> c.getString("storage.mysql.tables.users", null));
     public static ConfigKey<String> STORAGE_MYSQL_TABLES_SUBSCRIBED_CHANNELS = key(c -> c.getString("storage.mysql.tables.subscribed-channels", null));
+    public static ConfigKey<String> STORAGE_MYSQL_TABLES_IGNORED_USERS = key(c -> c.getString("storage.mysql.tables.ignored-users", null));
 
     /**
      * The database settings, username, password, etc for use by any database

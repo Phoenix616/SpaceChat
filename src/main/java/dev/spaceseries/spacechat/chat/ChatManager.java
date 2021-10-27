@@ -12,12 +12,15 @@ import dev.spaceseries.spacechat.logging.wrap.LogChatWrapper;
 import dev.spaceseries.spacechat.logging.wrap.LogToType;
 import dev.spaceseries.spacechat.logging.wrap.LogType;
 import dev.spaceseries.spacechat.model.Channel;
+import dev.spaceseries.spacechat.model.User;
 import dev.spaceseries.spacechat.model.formatting.Format;
 import dev.spaceseries.spacechat.model.manager.Manager;
 import dev.spaceseries.spacechat.sync.ServerDataSyncService;
 import dev.spaceseries.spacechat.sync.ServerStreamSyncService;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.chat.RedisChatPacket;
 import dev.spaceseries.spacechat.util.color.ColorUtil;
+import net.kyori.adventure.identity.Identified;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -27,6 +30,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ChatManager implements Manager {
@@ -61,9 +66,23 @@ public class ChatManager implements Manager {
      * of understanding
      *
      * @param component component
+     * @deprecated Use {@link #sendComponentChatMessage(UUID, Component)}
      */
+    @Deprecated
     public void sendComponentChatMessage(Component component) {
         sendComponentMessage(component);
+    }
+
+    /**
+     * Send a chat message to all online players checking whether or not they ignore the sender
+     *
+     * @param from      sender UUID
+     * @param component component
+     */
+    public void sendComponentChatMessage(UUID from, Component component) {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            sendComponentChatMessage(from, component, player);
+        }
     }
 
     /**
@@ -74,13 +93,29 @@ public class ChatManager implements Manager {
      *
      * @param component component
      * @param to        to
+     * @deprecated Use {@link #sendComponentChatMessage(UUID, Component, Player)}
      */
+    @Deprecated
     public void sendComponentChatMessage(Component component, Player to) {
-        sendComponentMessage(component, to);
+        sendComponentMessage(Identity.nil(), component, to);
     }
 
     /**
-     * Send a raw component to all players
+     * Send a chat message to a specific player if they don't ignore the sender
+     *
+     * @param from      sender UUID
+     * @param component component
+     * @param to        to
+     */
+    public void sendComponentChatMessage(UUID from, Component component, Player to) {
+        User user = plugin.getUserManager().get(to.getUniqueId());
+        if (user == null || !user.isIgnored(from)) {
+            sendComponentMessage(Identity.identity(from), component, to);
+        }
+    }
+
+    /**
+     * Send a raw component to all players with a nil Identity as the source
      *
      * @param component component
      */
@@ -90,14 +125,27 @@ public class ChatManager implements Manager {
     }
 
     /**
-     * Send a raw component to a player
+     * Send a raw component to a player with a nil Identity as the source
      *
      * @param component component
      * @param to        to
+     * @deprecated Use {@link #sendComponentMessage(Identity, Component, Player)}
      */
+    @Deprecated
     public void sendComponentMessage(Component component, Player to) {
+        sendComponentMessage(Identity.nil(), component, to);
+    }
+
+    /**
+     * Send a raw component to a player
+     *
+     * @param from      the sender identity
+     * @param component component
+     * @param to        to
+     */
+    public void sendComponentMessage(Identity from, Component component, Player to) {
         // send chat message to all online players
-        Message.getAudienceProvider().player(to.getUniqueId()).sendMessage(component);
+        Message.getAudienceProvider().player(to.getUniqueId()).sendMessage(from, component);
     }
 
     /**
@@ -106,16 +154,24 @@ public class ChatManager implements Manager {
      * @param component component
      * @param channel   channel
      */
-    public void sendComponentChannelMessage(Player from, Component component, Channel channel) {
+    public void sendComponentChannelMessage(UUID from, Component component, Channel channel) {
         // get all subscribed players to that channel
         List<Player> subscribedPlayers = serverDataSyncService.getSubscribedUUIDs(channel)
-                .stream().map(Bukkit::getPlayer)
+                .stream()
+                .filter(uuid -> {
+                    User user = plugin.getUserManager().get(uuid);
+                    return user == null || !user.isIgnored(from);
+                })
+                .map(Bukkit::getPlayer)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
+        Player fromPlayer = plugin.getServer().getPlayer(from);
 
         // even if not listening, add the sender to the list of players listening so that they can view the message
         // that they sent themselves
-        if (from != null && !subscribedPlayers.contains(from)) {
-            subscribedPlayers.add(from);
+        if (fromPlayer != null && !subscribedPlayers.contains(fromPlayer)) {
+            subscribedPlayers.add(fromPlayer);
         }
 
         List<Player> subscribedPlayersWithPermission = subscribedPlayers.stream()
@@ -130,7 +186,7 @@ public class ChatManager implements Manager {
         }));
 
 
-        subscribedPlayersWithPermission.forEach(p -> sendComponentMessage(component, p));
+        subscribedPlayersWithPermission.forEach(p -> sendComponentMessage(Identity.identity(from), component, p));
     }
 
     /**
@@ -163,10 +219,10 @@ public class ChatManager implements Manager {
 
         // if channel exists, then send through it
         if (applicableChannel != null) {
-            sendComponentChannelMessage(from, components, applicableChannel);
+            sendComponentChannelMessage(from.getUniqueId(), components, applicableChannel);
         } else {
             // send component message to entire server
-            sendComponentChatMessage(components);
+            sendComponentChatMessage(from.getUniqueId(), components);
         }
 
         // log to storage
@@ -247,7 +303,7 @@ public class ChatManager implements Manager {
             }
 
             // send to 'to-player'
-            sendComponentChatMessage(component, to);
+            sendComponentChatMessage(from.getUniqueId(), component, to);
         });
 
         // log to storage

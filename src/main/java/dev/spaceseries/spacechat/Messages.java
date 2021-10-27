@@ -83,6 +83,27 @@ public class Messages {
     // player not found
     public Message playerNotFound;
 
+    // ignored a player
+    public Message ignoreAdded;
+
+    // player is already ignored
+    public Message playerAlreadyIgnored;
+
+    // unignored a player
+    public Message ignoreRemoved;
+
+    // player is not ignored
+    public Message playerNotIgnored;
+
+    // the head of the ignored list
+    public Message ignoreListHead;
+
+    // the head of the ignored list
+    public Message ignoreListEntry;
+
+    // the head of the ignored list
+    public Message ignoreListFooter;
+
     public Messages(SpaceChatPlugin plugin) {
         this.plugin = plugin;
 
@@ -98,6 +119,13 @@ public class Messages {
         channelAccessDenied = Message.fromConfigurationSection("channel.access-denied", this.getLangConfiguration());
         channelInvalid = Message.fromConfigurationSection("channel.invalid", this.getLangConfiguration());
         playerNotFound = Message.fromConfigurationSection("ignore.player-not-found", this.getLangConfiguration());
+        ignoreAdded = Message.fromConfigurationSection("ignore.added", this.getLangConfiguration());
+        playerAlreadyIgnored = Message.fromConfigurationSection("ignore.already-ignored", this.getLangConfiguration());
+        ignoreRemoved = Message.fromConfigurationSection("ignore.removed", this.getLangConfiguration());
+        playerNotIgnored = Message.fromConfigurationSection("ignore.not-ignored", this.getLangConfiguration());
+        ignoreListHead = Message.fromConfigurationSection("ignore.list.head", this.getLangConfiguration());
+        ignoreListEntry = Message.fromConfigurationSection("ignore.list.entry", this.getLangConfiguration());
+        ignoreListFooter = Message.fromConfigurationSection("ignore.list.footer", this.getLangConfiguration());
     }
 
     /**

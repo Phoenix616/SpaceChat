@@ -10,8 +10,6 @@ import org.bukkit.entity.Player;
 @CommandAlias("ignore")
 public class IgnoreCommand extends SpaceChatCommand {
 
-    private SpaceChatPlugin plugin;
-
     public IgnoreCommand(SpaceChatPlugin plugin) {
         super(plugin);
     }
@@ -24,25 +22,47 @@ public class IgnoreCommand extends SpaceChatCommand {
         @Default
         public void onAdd(Player player, @Single String targetName) {
             // get user
-            plugin.getUserManager().getByName(targetName, (user -> {
-                if (user == null) {
+            plugin.getUserManager().getByName(targetName, (targetUser) -> {
+                if (targetUser == null) {
                     Messages.getInstance(plugin).playerNotFound.message(player);
                     return;
                 }
 
-                // TODO Implement adding the target from the decided storage method
-            }));
+                // get sender user
+                plugin.getUserManager().use(player.getUniqueId(), (user) -> {
+                    // add ignored
+                    if (user.ignorePlayer(user)) {
+                        // send message
+                        Messages.getInstance(plugin).ignoreAdded.message(player, "%user%", user.getUsername());
+                    } else {
+                        // already ignored, send error
+                        Messages.getInstance(plugin).playerAlreadyIgnored.message(player, "%user%", user.getUsername());
+                    }
+                });
+            });
         }
     }
 
     @Subcommand("list")
     @CommandAlias("ignore")
     @CommandPermission("space.chat.command.ignore.list")
-    public static class ListCommand extends BaseCommand {
+    public class ListCommand extends BaseCommand {
 
         @Default
         public void onList(Player player) {
-            // TODO Depending on decided storage method, pull all ignored players and list them in a message
+            // get sender user
+            plugin.getUserManager().use(player.getUniqueId(), (user) -> {
+                Messages.getInstance(plugin).ignoreListHead.message(player, "%amount%", String.valueOf(user.getIgnored().size()));
+
+                user.getIgnored().entrySet().stream()
+                        .sorted((e1, e2) -> e1.getValue().compareToIgnoreCase(e2.getValue()))
+                        .forEachOrdered(entry -> Messages.getInstance(plugin).ignoreListEntry.message(player,
+                                "%name%", entry.getValue(),
+                                "%uuid%", entry.getKey().toString()
+                        ));
+
+                Messages.getInstance(plugin).ignoreListFooter.message(player, "%amount%", String.valueOf(user.getIgnored().size()));
+            });
         }
     }
 
@@ -54,13 +74,23 @@ public class IgnoreCommand extends SpaceChatCommand {
         @Default
         public void onRemove(Player player, @Single String targetName) {
             // get user
-            plugin.getUserManager().getByName(targetName, (user) -> {
-                if (user == null) {
+            plugin.getUserManager().getByName(targetName, (targetUser) -> {
+                if (targetUser == null) {
                     Messages.getInstance(plugin).playerNotFound.message(player);
                     return;
                 }
 
-                // TODO Implement removing the target from the decided storage method -- also check if the sender even has ignored the target
+                // get sender user
+                plugin.getUserManager().use(player.getUniqueId(), (user) -> {
+                    // remove ignored
+                    if (user.unignorePlayer(user)) {
+                        // send message
+                        Messages.getInstance(plugin).ignoreRemoved.message(player, "%user%", user.getUsername());
+                    } else {
+                        // not ignored, send error
+                        Messages.getInstance(plugin).playerNotIgnored.message(player, "%user%", user.getUsername());
+                    }
+                });
 
             });
         }

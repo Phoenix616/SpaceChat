@@ -4,6 +4,7 @@ import dev.spaceseries.spacechat.SpaceChatPlugin;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,11 @@ public final class User {
     private final List<Channel> subscribedChannels;
 
     /**
+     * Ignored players
+     */
+    private Map<UUID, String> ignored;
+
+    /**
      * Plugin context
      */
     private final SpaceChatPlugin plugin;
@@ -43,14 +49,16 @@ public final class User {
      * @param uuid     uuid
      * @param username username
      * @param date     date
+     * @param ignored
      */
-    public User(SpaceChatPlugin plugin, UUID uuid, String username, Date date, List<Channel> subscribedChannels) {
+    public User(SpaceChatPlugin plugin, UUID uuid, String username, Date date, List<Channel> subscribedChannels, Map<UUID, String> ignored) {
         this.plugin = plugin;
         this.username = username;
         this.uuid = uuid;
         this.date = date;
         this.currentChannel = null;
         this.subscribedChannels = subscribedChannels;
+        this.ignored = ignored;
 
         // on initialization, subscribe to stored subscribed list (parameter in constructor)
         // aka get from storage and also save to storage when a player calls one of the below methods about channel
@@ -168,5 +176,44 @@ public final class User {
 
         // remove from subscribed channels list (in this obj)
         this.subscribedChannels.removeIf(c -> channel.getHandle().equals(c.getHandle()));
+    }
+
+    /**
+     * Check whether this user has another one ignored
+     *
+     * @param playerId The UUID of the player to check
+     * @return Whether they have them ignored
+     */
+    public boolean isIgnored(UUID playerId) {
+        return this.ignored.containsKey(playerId);
+    }
+
+    /**
+     * Get all ignored players
+     *
+     * @return A map of the UUIDs and usernames of the ignored players
+     */
+    public Map<UUID, String> getIgnored() {
+        return this.ignored;
+    }
+
+    /**
+     * Ignore a player
+     *
+     * @param user The player to ignore
+     * @return <tt>true</tt> if the player was successfully ignored; <tt>false</tt> if they were already ignored
+     */
+    public boolean ignorePlayer(User user) {
+        return this.ignored.put(user.getUuid(), user.getUsername()) == null;
+    }
+
+    /**
+     * Unignore a player
+     *
+     * @param user The player to Unignore
+     * @return <tt>true</tt> if the player was successfully unignored; <tt>false</tt> if they were not ignored before
+     */
+    public boolean unignorePlayer(User user) {
+        return this.ignored.remove(user.getUuid()) != null;
     }
 }

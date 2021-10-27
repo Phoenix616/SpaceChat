@@ -76,6 +76,7 @@ storage:
       chat-logs: "spacechat_chatlogs"
       users: "spacechat_users"
       subscribed-channels: "spacechat_subscribed_channels"
+      ignored-users: "spacechat_ignored_users"
 
 #=#=#=#=#=#=#=#=#=#=#=#=#=#
 # Redis Configuration     #

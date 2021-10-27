@@ -36,8 +36,22 @@ channel:
     - "&cOops! You aren't allowed to interact with that channel!"
 ignore:
   player-not-found:
-    text:
-      - "&cCould not find specified player."
+    - "&cCould not find specified player."
+  added:
+    - "&aAdded player &7%user%&a to your ignore list."
+  already-ignored:
+    - "&7%user%&a is already on your ignore list!"
+  removed:
+    - "&aRemoved player &7%user%&a from your ignore list."
+  not-ignored:
+    - "&7%user%&c is not on your ignore list?"
+  list:
+    head:
+      - "&bIgnored players:"
+    entry:
+      - "&f- &7%name%"
+    footer:
+      - "&fTotal: &7%amount% ignored"
 reload:
   success:
     - "&aSuccessfully reloaded &bChat"

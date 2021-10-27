@@ -101,12 +101,12 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
 
         // if channel exists, send through that instead
         if (chatPacket.getChannel() != null && plugin.getChannelManager().get(chatPacket.getChannel().getHandle()) != null) {
-            chatManager.sendComponentChannelMessage(null, chatPacket.getComponent(), chatPacket.getChannel());
+            chatManager.sendComponentChannelMessage(chatPacket.getSender(), chatPacket.getComponent(), chatPacket.getChannel());
             return;
         }
 
         // send to all players
-        chatManager.sendComponentChatMessage(chatPacket.getComponent());
+        chatManager.sendComponentChatMessage(chatPacket.getSender(), chatPacket.getComponent());
     }
 
     /**

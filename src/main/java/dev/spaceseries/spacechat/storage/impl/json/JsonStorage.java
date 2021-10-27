@@ -12,6 +12,7 @@ import org.spongepowered.configurate.serialize.SerializationException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,7 +93,7 @@ public class JsonStorage extends Storage {
 
             if (user == null) {
                 // since it's null, create it
-                user = new User(plugin, uuid, null, Date.from(Instant.now()), new ArrayList<>());
+                user = new User(plugin, uuid, null, Date.from(Instant.now()), new ArrayList<>(), new HashMap<>());
 
                 // add to configuration file
                 usersList.add(user);
