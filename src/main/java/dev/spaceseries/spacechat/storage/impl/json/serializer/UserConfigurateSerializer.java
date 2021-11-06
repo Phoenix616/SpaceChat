@@ -74,7 +74,9 @@ public class UserConfigurateSerializer implements TypeSerializer<User> {
                         Map.Entry::getValue
                 ));
 
-        return new User(plugin, UUID.fromString(uuidString), username, date, subscribedChannels, ignored);
+        String lastMessaged = node.node("lastMessaged").getString();
+
+        return new User(plugin, UUID.fromString(uuidString), username, date, subscribedChannels, lastMessaged, ignored);
     }
 
     /**
@@ -99,6 +101,8 @@ public class UserConfigurateSerializer implements TypeSerializer<User> {
         node.node("subscribedChannels").setList(String.class, obj.getSubscribedChannels().stream()
                 .map(Channel::getHandle)
                 .collect(Collectors.toList()));
+
+        node.node("lastMessaged").set(obj.getLastMessaged());
 
         for (Map.Entry<UUID, String> entry : obj.getIgnored().entrySet()) {
             node.node("ignored").node(entry.getKey().toString()).set(entry.getValue());

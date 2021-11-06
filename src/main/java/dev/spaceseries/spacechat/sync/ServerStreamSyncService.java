@@ -22,6 +22,11 @@ public abstract class ServerStreamSyncService extends ServerSyncService {
     public abstract void publishChat(SendStreamDataPacket<?> packet);
 
     /**
+     * Publishes a private chat message across the server
+     */
+    public abstract void publishPrivateChat(SendStreamDataPacket<?> packet);
+
+    /**
      * Publishes a broadcast message across the server
      */
     public abstract void publishBroadcast(SendStreamDataPacket<?> packet);
@@ -30,6 +35,11 @@ public abstract class ServerStreamSyncService extends ServerSyncService {
      * Receives an incoming chat message
      */
     public abstract void receiveChat(ReceiveStreamDataPacket<?> packet);
+
+    /**
+     * Receives an incoming private chat message
+     */
+    public abstract void receivePrivateChat(ReceiveStreamDataPacket<?> packet);
 
     /**
      * Receives an incoming chat message

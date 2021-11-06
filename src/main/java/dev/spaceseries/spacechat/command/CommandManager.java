@@ -23,6 +23,8 @@ public class CommandManager extends BukkitCommandManager {
         Arrays.asList(
                 new SpaceChatCommand(plugin),
                 new ChannelCommand(plugin),
+                new PrivateMessageCommand(plugin),
+                new ReplyCommand(plugin),
                 new IgnoreCommand(plugin),
                 new BroadcastCommand(plugin),
                 new BroadcastMinimessageCommand(plugin)

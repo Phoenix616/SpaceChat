@@ -42,20 +42,28 @@ public class RedisMessenger extends JedisPubSub {
 
         // subscribing to redis pub/sub is a blocking operation.
         // we need to make a new thread in order to not block the main thread....
-        new Thread(() -> {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try (Jedis jedis = pool.getResource()) {
                 // subscribe this class to chat channel
                 jedis.subscribe(this, REDIS_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
             }
-        }).start();
+        });
+
+        // create a separate thread for private chat packets
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Jedis jedis = pool.getResource()) {
+                // subscribe this class to chat channel
+                jedis.subscribe(this, REDIS_PRIVATE_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
+            }
+        });
 
         // create a separate thread for broadcast packets
-        new Thread(() -> {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try (Jedis jedis = pool.getResource()) {
                 // subscribe this class to chat channel
                 jedis.subscribe(this, REDIS_BROADCAST_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
             }
-        }).start();
+        });
     }
 
     /**
@@ -65,6 +73,7 @@ public class RedisMessenger extends JedisPubSub {
         if (this.pool != null && this.pool.getResource().getClient() != null) {
             // unsubscribe from chat channel
             unsubscribe(REDIS_CHAT_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter()));
+            unsubscribe(REDIS_PRIVATE_CHAT_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter()));
             unsubscribe(REDIS_BROADCAST_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter()));
 
             pool.close();
@@ -79,6 +88,8 @@ public class RedisMessenger extends JedisPubSub {
         // if it's the correct channel
         if (channel.equalsIgnoreCase(REDIS_CHAT_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter())))
             this.syncService.receiveChat(new RedisStringReceiveDataPacket(message));
+        else if (channel.equalsIgnoreCase(REDIS_PRIVATE_CHAT_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter())))
+            this.syncService.receivePrivateChat(new RedisStringReceiveDataPacket(message));
         else if (channel.equalsIgnoreCase(REDIS_BROADCAST_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter())))
             this.syncService.receiveBroadcast(new RedisStringReceiveDataPacket(message));
     }

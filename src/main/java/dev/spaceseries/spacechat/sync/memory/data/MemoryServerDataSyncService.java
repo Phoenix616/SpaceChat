@@ -128,6 +128,22 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void addPlayer(String username) {
+        // no need to manually add
+    }
+
+    @Override
+    public void removePlayer(String username) {
+        // no need to manually remove
+    }
+
+    @Override
+    public String getPlayerServer(String username) {
+        // the player will always be on the current server if they are online
+        return plugin.getServer().getPlayer(username) != null ? "local" : null;
+    }
+
     private static class PlayerSubscribedChannelManager extends MapManager<UUID, List<Channel>> implements Listener {
         @EventHandler
         public void onPlayerQuit(PlayerQuitEvent event) {

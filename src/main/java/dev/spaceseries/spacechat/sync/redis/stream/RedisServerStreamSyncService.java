@@ -2,8 +2,10 @@ package dev.spaceseries.spacechat.sync.redis.stream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.chat.ChatManager;
+import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
 import dev.spaceseries.spacechat.sync.ServerStreamSyncService;
 import dev.spaceseries.spacechat.sync.ServerSyncServiceManager;
 import dev.spaceseries.spacechat.sync.packet.ReceiveStreamDataPacket;
@@ -16,6 +18,11 @@ import dev.spaceseries.spacechat.sync.redis.stream.packet.broadcast.RedisBroadca
 import dev.spaceseries.spacechat.sync.redis.stream.packet.chat.RedisChatPacket;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.chat.RedisChatPacketDeserializer;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.chat.RedisChatPacketSerializer;
+import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPrivateChatPacket;
+import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPrivateChatPacketDeserializer;
+import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPrivateChatPacketSerializer;
+import net.kyori.adventure.identity.Identity;
+import org.bukkit.entity.Player;
 
 import static dev.spaceseries.spacechat.config.SpaceChatConfigKeys.*;
 
@@ -68,6 +75,22 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
     }
 
     /**
+     * Publishes a chat message across the server
+     *
+     * @param packet packet
+     */
+    @Override
+    public void publishPrivateChat(SendStreamDataPacket<?> packet) {
+        RedisPrivateChatPacket redisChatPacket = (RedisPrivateChatPacket) packet;
+
+        // gson-ify the redis message
+        String json = gson.toJson(redisChatPacket, RedisPrivateChatPacket.class);
+
+        // publish to redis
+        redisMessenger.publish(new RedisPublishDataPacket(REDIS_PRIVATE_CHAT_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter()), json));
+    }
+
+    /**
      * Publishes a broadcast message across the server
      *
      * @param packet packet
@@ -110,6 +133,42 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
     }
 
     /**
+     * Receives an incoming private chat message
+     *
+     * @param packet packet
+     */
+    @Override
+    public void receivePrivateChat(ReceiveStreamDataPacket<?> packet) {
+        RedisStringReceiveDataPacket redisStringReceiveDataPacket = (RedisStringReceiveDataPacket) packet;
+        // deserialize
+        RedisPrivateChatPacket chatPacket = gson.fromJson(redisStringReceiveDataPacket.getData(), RedisPrivateChatPacket.class);
+
+        // if the message is from ourselves, then return
+        if (chatPacket.getServerIdentifier().equalsIgnoreCase(REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()))) {
+            return;
+        }
+
+        // if player is online send it to them
+        Player to = plugin.getServer().getPlayer(chatPacket.getTargetName());
+        if (to != null) {
+            if (chatPacket.getSender().equals(Identity.nil().uuid())) {
+                // message is error sent by plugin
+                chatManager.sendComponentMessage(Identity.nil(), chatPacket.getComponent(), to);
+            } else {
+                plugin.getUserManager().use(to.getUniqueId(), user -> {
+                    // Check for ignored
+                    if (user.isIgnored(chatPacket.getSender())) {
+                        publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), Messages.getInstance(plugin).pmIgnoredByTarget.compile("%user%", to.getName())));
+                    } else {
+                        chatManager.sendComponentMessage(Identity.identity(chatPacket.getSender()), chatPacket.getComponent(), to);
+                        user.setLastMessaged(chatPacket.getSenderName());
+                    }
+                });
+            }
+        }
+    }
+
+    /**
      * Receives an incoming chat message
      *
      * @param packet packet
@@ -141,6 +200,8 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
         gson = new GsonBuilder()
                 .registerTypeAdapter(RedisChatPacket.class, new RedisChatPacketSerializer())
                 .registerTypeAdapter(RedisChatPacket.class, new RedisChatPacketDeserializer(plugin))
+                .registerTypeAdapter(RedisPrivateChatPacket.class, new RedisPrivateChatPacketSerializer())
+                .registerTypeAdapter(RedisPrivateChatPacket.class, new RedisPrivateChatPacketDeserializer())
                 .registerTypeAdapter(RedisBroadcastPacket.class, new RedisBroadcastPacketSerializer())
                 .registerTypeAdapter(RedisBroadcastPacket.class, new RedisBroadcastPacketDeserializer())
                 .create();

@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class Message {
 
@@ -150,12 +151,41 @@ public class Message {
     }
 
     /**
+     * Replaces replacers inside the component
+     *
+     * @param component component
+     * @param replacers replacers
+     * @return component
+     */
+    private Component replace(Component component, Map<String, Component> replacers) {
+        // loop through replacers
+        for (Map.Entry<String, Component> entry : replacers.entrySet()) {
+            String replacer = entry.getKey();
+            Component replacement = entry.getValue();
+
+            component = component.replaceText((b) -> b.matchLiteral(replacer).replacement(replacement));
+        }
+
+        return component;
+    }
+
+    /**
      * Used as a proxy method to compile the entire message (parsing, replacing, etc) into a component
      *
      * @param replacers replacers
      * @return component
      */
     public Component compile(String... replacers) {
+        return replace(parse(), replacers);
+    }
+
+    /**
+     * Used as a proxy method to compile the entire message (parsing, replacing, etc) into a component
+     *
+     * @param replacers replacers
+     * @return component
+     */
+    public Component compile(Map<String, Component> replacers) {
         return replace(parse(), replacers);
     }
 

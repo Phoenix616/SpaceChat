@@ -74,6 +74,7 @@ storage:
         #verifyServerCertificate: false
     tables:
       chat-logs: "spacechat_chatlogs"
+      private-chat-logs: "spacechat_private_chatlogs"
       users: "spacechat_users"
       subscribed-channels: "spacechat_subscribed_channels"
       ignored-users: "spacechat_ignored_users"
@@ -104,9 +105,10 @@ redis:
   # redis-socket:///path/to/socket
   url: "redis://[password@]host[:port][/databaseNumber]"
 
-  # <!> 'chat-channel' and 'broadcast-channel' can ***NOT*** be the same <!>
-  # Please choose two different channels
+  # <!> 'chat-channel', 'private-chat-channel' and 'broadcast-channel' can ***NOT*** be the same <!>
+  # Please choose three different channels
   chat-channel: "spacechat-message"
+  private-chat-channel: "spacechat-private-message"
   broadcast-channel: "spacechat-broadcast"
 
   # This is the key that should be used to define where spacechat looks for a player's current subscribed channels list
@@ -114,6 +116,7 @@ redis:
   player-subscribed-channels-list-key: "spacechat:subscribedchannels:%uuid%:channels"
   player-current-channel-key: "spacechat:channels:%uuid%:current"
   channels-subscribed-uuids-list-key: "spacechat:channels:%channel%"
+  online-players-server-key: "spacechat:onlineplayers:%username%:server"
 
 #=#=#=#=#=#=#=#=#=#=#=#=#
 #      Misc Settings    #

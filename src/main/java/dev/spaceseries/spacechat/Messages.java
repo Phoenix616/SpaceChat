@@ -81,7 +81,7 @@ public class Messages {
      */
 
     // player not found
-    public Message playerNotFound;
+    public Message ignorePlayerNotFound;
 
     // ignored a player
     public Message ignoreAdded;
@@ -104,6 +104,28 @@ public class Messages {
     // the head of the ignored list
     public Message ignoreListFooter;
 
+    /**
+     * Private message
+     */
+
+    // player not found
+    public Message pmPlayerNotFound;
+
+    // sender has target ignored
+    public Message pmTargetIgnored;
+
+    // target has sender ignored
+    public Message pmIgnoredByTarget;
+
+    // player not found
+    public Message pmReceived;
+
+    // sender has target ignored
+    public Message pmSent;
+
+    // no one messaged the user
+    public Message replyNoOneMessaged;
+
     public Messages(SpaceChatPlugin plugin) {
         this.plugin = plugin;
 
@@ -118,7 +140,7 @@ public class Messages {
         channelMute = Message.fromConfigurationSection("channel.mute", this.getLangConfiguration());
         channelAccessDenied = Message.fromConfigurationSection("channel.access-denied", this.getLangConfiguration());
         channelInvalid = Message.fromConfigurationSection("channel.invalid", this.getLangConfiguration());
-        playerNotFound = Message.fromConfigurationSection("ignore.player-not-found", this.getLangConfiguration());
+        ignorePlayerNotFound = Message.fromConfigurationSection("ignore.player-not-found", this.getLangConfiguration());
         ignoreAdded = Message.fromConfigurationSection("ignore.added", this.getLangConfiguration());
         playerAlreadyIgnored = Message.fromConfigurationSection("ignore.already-ignored", this.getLangConfiguration());
         ignoreRemoved = Message.fromConfigurationSection("ignore.removed", this.getLangConfiguration());
@@ -126,6 +148,10 @@ public class Messages {
         ignoreListHead = Message.fromConfigurationSection("ignore.list.head", this.getLangConfiguration());
         ignoreListEntry = Message.fromConfigurationSection("ignore.list.entry", this.getLangConfiguration());
         ignoreListFooter = Message.fromConfigurationSection("ignore.list.footer", this.getLangConfiguration());
+        pmPlayerNotFound = Message.fromConfigurationSection("privatemessage.player-not-found", this.getLangConfiguration());
+        pmTargetIgnored = Message.fromConfigurationSection("privatemessage.target-ignored", this.getLangConfiguration());
+        pmIgnoredByTarget = Message.fromConfigurationSection("privatemessage.ignored-by-target", this.getLangConfiguration());
+        replyNoOneMessaged = Message.fromConfigurationSection("privatemessage.reply-no-one-messaged", this.getLangConfiguration());
     }
 
     /**

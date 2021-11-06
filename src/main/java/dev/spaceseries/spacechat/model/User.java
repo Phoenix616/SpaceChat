@@ -1,9 +1,12 @@
 package dev.spaceseries.spacechat.model;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,9 +39,14 @@ public final class User {
     private final List<Channel> subscribedChannels;
 
     /**
+     * The name of the player that last messaged us
+     */
+    private String lastMessaged;
+
+    /**
      * Ignored players
      */
-    private Map<UUID, String> ignored;
+    private final BiMap<UUID, String> ignored;
 
     /**
      * Plugin context
@@ -51,14 +59,15 @@ public final class User {
      * @param date     date
      * @param ignored
      */
-    public User(SpaceChatPlugin plugin, UUID uuid, String username, Date date, List<Channel> subscribedChannels, Map<UUID, String> ignored) {
+    public User(SpaceChatPlugin plugin, UUID uuid, String username, Date date, List<Channel> subscribedChannels, String lastMessaged, Map<UUID, String> ignored) {
         this.plugin = plugin;
         this.username = username;
         this.uuid = uuid;
         this.date = date;
         this.currentChannel = null;
         this.subscribedChannels = subscribedChannels;
-        this.ignored = ignored;
+        this.lastMessaged = lastMessaged;
+        this.ignored = HashBiMap.create(ignored);
 
         // on initialization, subscribe to stored subscribed list (parameter in constructor)
         // aka get from storage and also save to storage when a player calls one of the below methods about channel
@@ -179,6 +188,24 @@ public final class User {
     }
 
     /**
+     * The name of the player that last messaged us
+     *
+     * @return the last messenger's name
+     */
+    public String getLastMessaged() {
+        return lastMessaged;
+    }
+
+    /**
+     * Set who messaged this user last
+     *
+     * @param playerName the name of the messenger
+     */
+    public void setLastMessaged(String playerName) {
+        this.lastMessaged = playerName;
+    }
+
+    /**
      * Check whether this user has another one ignored
      *
      * @param playerId The UUID of the player to check
@@ -186,6 +213,16 @@ public final class User {
      */
     public boolean isIgnored(UUID playerId) {
         return this.ignored.containsKey(playerId);
+    }
+
+    /**
+     * Check whether this user has another one ignored
+     *
+     * @param playerName The name of the player to check
+     * @return Whether they have them ignored
+     */
+    public boolean isIgnored(String playerName) {
+        return this.ignored.containsValue(playerName.toLowerCase(Locale.ROOT));
     }
 
     /**
@@ -204,7 +241,7 @@ public final class User {
      * @return <tt>true</tt> if the player was successfully ignored; <tt>false</tt> if they were already ignored
      */
     public boolean ignorePlayer(User user) {
-        return this.ignored.put(user.getUuid(), user.getUsername()) == null;
+        return this.ignored.put(user.getUuid(), user.getUsername().toLowerCase(Locale.ROOT)) == null;
     }
 
     /**

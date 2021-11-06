@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.logging.wrap.LogChatWrapper;
+import dev.spaceseries.spacechat.logging.wrap.LogPrivateChatWrapper;
 import dev.spaceseries.spacechat.logging.wrap.LogType;
 import dev.spaceseries.spacechat.logging.wrap.LogWrapper;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -55,13 +56,19 @@ public class LogWrapperConfigurateSerializer implements TypeSerializer<LogWrappe
 
         LogType logType = LogType.valueOf(node.node("type").getString());
 
-        if (logType == LogType.CHAT) {
+        if (logType == LogType.CHAT || logType == LogType.PRIVATE_CHAT) {
             String senderName = node.node("senderName").getString();
             UUID senderUUID = UUID.fromString(node.node("senderUUID").getString());
             String message = node.node("message").getString();
             Date date = gson.fromJson(node.node("date").getString(), Date.class);
 
-            return new LogChatWrapper(LogType.CHAT, senderName, senderUUID, message, date);
+            if (logType == LogType.CHAT) {
+                return new LogChatWrapper(LogType.CHAT, senderName, senderUUID, message, date);
+            } else if (logType == LogType.PRIVATE_CHAT) {
+                String targetName = node.node("targetName").getString();
+
+                return new LogPrivateChatWrapper(LogType.PRIVATE_CHAT, senderName, senderUUID, targetName, message, date);
+            }
         }
 
         return null;
@@ -82,7 +89,7 @@ public class LogWrapperConfigurateSerializer implements TypeSerializer<LogWrappe
             return;
         }
 
-        if (obj.getLogType().equals(LogType.CHAT) && obj instanceof LogChatWrapper) {
+        if (obj instanceof LogChatWrapper) {
             serializeLogChatWrapper((LogChatWrapper) obj, node);
         }
     }
@@ -100,5 +107,9 @@ public class LogWrapperConfigurateSerializer implements TypeSerializer<LogWrappe
         node.node("message").set(wrapper.getMessage());
         node.node("date").set(gson.toJson(wrapper.getAt()));
         node.node("type").set(wrapper.getLogType().name());
+
+        if (wrapper instanceof LogPrivateChatWrapper) {
+            node.node("targetName").set(((LogPrivateChatWrapper) wrapper).getTargetName());
+        }
     }
 }

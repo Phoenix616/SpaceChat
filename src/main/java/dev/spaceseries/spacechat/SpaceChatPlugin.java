@@ -5,6 +5,7 @@ import dev.spaceseries.spacechat.api.message.Message;
 import dev.spaceseries.spacechat.channel.ChannelManager;
 import dev.spaceseries.spacechat.chat.ChatFormatManager;
 import dev.spaceseries.spacechat.chat.ChatManager;
+import dev.spaceseries.spacechat.chat.PrivateFormatManager;
 import dev.spaceseries.spacechat.command.CommandManager;
 import dev.spaceseries.spacechat.config.SpaceChatConfig;
 import dev.spaceseries.spacechat.external.papi.SpaceChatExpansion;
@@ -48,6 +49,11 @@ public final class SpaceChatPlugin extends JavaPlugin {
      * The chat format manager
      */
     private ChatFormatManager chatFormatManager;
+
+    /**
+     * The private message format manager
+     */
+    private PrivateFormatManager privateFormatManager;
 
     /**
      * The log manager
@@ -201,6 +207,7 @@ public final class SpaceChatPlugin extends JavaPlugin {
     public void loadFormats() {
         // initialize chat format manager (also loads all formats!)
         chatFormatManager = new ChatFormatManager(this);
+        privateFormatManager = new PrivateFormatManager(this);
     }
 
     /**
@@ -334,6 +341,15 @@ public final class SpaceChatPlugin extends JavaPlugin {
      */
     public ChatFormatManager getChatFormatManager() {
         return chatFormatManager;
+    }
+
+    /**
+     * Returns the private message format manager
+     *
+     * @return private message format manager
+     */
+    public PrivateFormatManager getPrivateFormatManager() {
+        return privateFormatManager;
     }
 
     /**

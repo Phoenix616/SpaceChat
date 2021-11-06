@@ -4,6 +4,7 @@ import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.model.Channel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public abstract class ServerDataSyncService extends ServerSyncService {
@@ -66,4 +67,25 @@ public abstract class ServerDataSyncService extends ServerSyncService {
      * @return uuids
      */
     public abstract List<UUID> getSubscribedUUIDs(Channel channel);
+
+    /**
+     * Add a player to the online list of the current server
+     *
+     * @param username  the name of the player
+     */
+    public abstract void addPlayer(String username);
+
+    /**
+     * Remove a player from the online list of the current server
+     *
+     * @param username  the name of the player
+     */
+    public abstract void removePlayer(String username);
+
+    /**
+     * Get the server that a player is online at or null if they aren't online
+     *
+     * @return the server or null
+     */
+    public abstract String getPlayerServer(String username);
 }

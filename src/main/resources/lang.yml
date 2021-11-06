@@ -52,6 +52,19 @@ ignore:
       - "&f- &7%name%"
     footer:
       - "&fTotal: &7%amount% ignored"
+privatemessage:
+  player-not-found:
+  - "&cCould not find specified player &7%user%&c."
+  target-ignored:
+  - "&cYou are ignoring &7%user%&c!"
+  ignored-by-target:
+  - "&7%user%&c ignores you!"
+  received:
+  - "&dFrom %format%"
+  sent:
+  - "&bTo %format%"
+  reply-no-one-messaged:
+  - "&cYou weren't messaged by anyone?"
 reload:
   success:
     - "&aSuccessfully reloaded &bChat"

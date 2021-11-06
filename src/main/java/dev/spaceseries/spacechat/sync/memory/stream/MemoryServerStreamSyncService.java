@@ -29,6 +29,16 @@ public class MemoryServerStreamSyncService extends ServerStreamSyncService {
     }
 
     /**
+     * Publishes a private chat message across the server
+     *
+     * @param packet packet
+     */
+    @Override
+    public void publishPrivateChat(SendStreamDataPacket<?> packet) {
+
+    }
+
+    /**
      * Publishes a broadcast message across the server
      *
      * @param packet packet
@@ -45,6 +55,16 @@ public class MemoryServerStreamSyncService extends ServerStreamSyncService {
      */
     @Override
     public void receiveChat(ReceiveStreamDataPacket<?> packet) {
+
+    }
+
+    /**
+     * Receives an incoming private chat message
+     *
+     * @param packet packet
+     */
+    @Override
+    public void receivePrivateChat(ReceiveStreamDataPacket<?> packet) {
 
     }
 

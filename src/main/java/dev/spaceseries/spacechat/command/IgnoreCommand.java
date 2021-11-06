@@ -24,7 +24,7 @@ public class IgnoreCommand extends SpaceChatCommand {
             // get user
             plugin.getUserManager().getByName(targetName, (targetUser) -> {
                 if (targetUser == null) {
-                    Messages.getInstance(plugin).playerNotFound.message(player);
+                    Messages.getInstance(plugin).ignorePlayerNotFound.message(player);
                     return;
                 }
 
@@ -76,7 +76,7 @@ public class IgnoreCommand extends SpaceChatCommand {
             // get user
             plugin.getUserManager().getByName(targetName, (targetUser) -> {
                 if (targetUser == null) {
-                    Messages.getInstance(plugin).playerNotFound.message(player);
+                    Messages.getInstance(plugin).ignorePlayerNotFound.message(player);
                     return;
                 }
 

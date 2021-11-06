@@ -1,5 +1,6 @@
 package dev.spaceseries.spacechat.logging.wrap;
 
 public enum LogType {
-    CHAT
+    CHAT,
+    PRIVATE_CHAT
 }

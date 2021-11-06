@@ -16,6 +16,7 @@ public class SpaceChatConfigKeys {
 
     public static ConfigKey<String> STORAGE_USE = key(c -> c.getString("storage.use", null));
     public static ConfigKey<String> STORAGE_MYSQL_TABLES_CHAT_LOGS = key(c -> c.getString("storage.mysql.tables.chat-logs", null));
+    public static ConfigKey<String> STORAGE_MYSQL_TABLES_PRIVATE_CHAT_LOGS = key(c -> c.getString("storage.mysql.tables.private-chat-logs", null));
     public static ConfigKey<String> STORAGE_MYSQL_TABLES_USERS = key(c -> c.getString("storage.mysql.tables.users", null));
     public static ConfigKey<String> STORAGE_MYSQL_TABLES_SUBSCRIBED_CHANNELS = key(c -> c.getString("storage.mysql.tables.subscribed-channels", null));
     public static ConfigKey<String> STORAGE_MYSQL_TABLES_IGNORED_USERS = key(c -> c.getString("storage.mysql.tables.ignored-users", null));
@@ -43,12 +44,14 @@ public class SpaceChatConfigKeys {
     public static ConfigKey<Boolean> REDIS_ENABLED = key(c -> c.getBoolean("redis.enabled", false));
     public static ConfigKey<String> REDIS_URL = key(c -> c.getString("redis.url", null));
     public static ConfigKey<String> REDIS_CHAT_CHANNEL = key(c -> c.getString("redis.chat-channel", null));
+    public static ConfigKey<String> REDIS_PRIVATE_CHAT_CHANNEL = key(c -> c.getString("redis.private-chat-channel", null));
     public static ConfigKey<String> REDIS_BROADCAST_CHANNEL = key(c -> c.getString("redis.broadcast-channel", null));
     public static ConfigKey<String> REDIS_SERVER_IDENTIFIER = key(c -> c.getString("redis.server.identifier", null));
     public static ConfigKey<String> REDIS_SERVER_DISPLAYNAME = key(c -> c.getString("redis.server.displayName", null));
     public static ConfigKey<String> REDIS_PLAYER_SUBSCRIBED_CHANNELS_LIST_KEY = key(c -> c.getString("redis.player-subscribed-channels-list-key", null));
     public static ConfigKey<String> REDIS_PLAYER_CURRENT_CHANNEL_KEY = key(c -> c.getString("redis.player-current-channel-key", null));
     public static ConfigKey<String> REDIS_CHANNELS_SUBSCRIBED_UUIDS_LIST_KEY = key(c -> c.getString("redis.channels-subscribed-uuids-list-key", null));
+    public static ConfigKey<String> REDIS_ONLINE_PLAYERS_SERVER_KEY = key(c -> c.getString("redis.online-players-server-key", null));
 
     public static ConfigKey<Boolean> LOGGING_CHAT_LOG_TO_STORAGE = key(c -> c.getBoolean("logging.chat.log-to-storage", true));
 

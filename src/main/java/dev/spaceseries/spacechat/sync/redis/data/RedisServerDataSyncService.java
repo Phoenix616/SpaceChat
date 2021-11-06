@@ -11,6 +11,7 @@ import redis.clients.jedis.JedisPool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -161,6 +162,37 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
                         return p != null && p.isOnline();
                     })
                     .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public void addPlayer(String username) {
+        try (Jedis jedis = pool.getResource()) {
+            jedis.set(REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())
+                    .replace("%username%", username.toLowerCase(Locale.ROOT))
+                    , REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()));
+        }
+    }
+
+    @Override
+    public void removePlayer(String username) {
+        try (Jedis jedis = pool.getResource()) {
+            String key = REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())
+                    .replace("%username%", username.toLowerCase(Locale.ROOT));
+            String storedServer = jedis.get(key);
+            if (storedServer != null && storedServer.equals(REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()))) {
+                jedis.del(key);
+            }
+        }
+    }
+
+    @Override
+    public String getPlayerServer(String username) {
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.get(REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())
+                    .replace("%username%", username.toLowerCase(Locale.ROOT)));
+        } catch (Exception e) {
+            return null;
         }
     }
 }

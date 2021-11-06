@@ -1,5 +1,7 @@
 package dev.spaceseries.spacechat.chat;
 
+import com.google.common.collect.ImmutableMap;
+import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.api.config.generic.adapter.ConfigurationAdapter;
 import dev.spaceseries.spacechat.api.message.Message;
@@ -9,6 +11,7 @@ import dev.spaceseries.spacechat.builder.live.NormalLiveChatFormatBuilder;
 import dev.spaceseries.spacechat.builder.live.RelationalLiveChatFormatBuilder;
 import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
 import dev.spaceseries.spacechat.logging.wrap.LogChatWrapper;
+import dev.spaceseries.spacechat.logging.wrap.LogPrivateChatWrapper;
 import dev.spaceseries.spacechat.logging.wrap.LogToType;
 import dev.spaceseries.spacechat.logging.wrap.LogType;
 import dev.spaceseries.spacechat.model.Channel;
@@ -18,13 +21,14 @@ import dev.spaceseries.spacechat.model.manager.Manager;
 import dev.spaceseries.spacechat.sync.ServerDataSyncService;
 import dev.spaceseries.spacechat.sync.ServerStreamSyncService;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.chat.RedisChatPacket;
+import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPrivateChatPacket;
 import dev.spaceseries.spacechat.util.color.ColorUtil;
-import net.kyori.adventure.identity.Identified;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
@@ -144,7 +148,7 @@ public class ChatManager implements Manager {
      * @param to        to
      */
     public void sendComponentMessage(Identity from, Component component, Player to) {
-        // send chat message to all online players
+        // send chat message to a specific player
         Message.getAudienceProvider().player(to.getUniqueId()).sendMessage(from, component);
     }
 
@@ -336,5 +340,70 @@ public class ChatManager implements Manager {
         // note: storage logging is handled in the actual chat format manager because there's no need to log
         // if a message come from redis. This is really a generified version of my initial idea
         // but it's pretty good and it works
+    }
+
+    /**
+     * Send a chat message
+     *
+     * @param from          player that the message is from
+     * @param targetName    the name of the target player
+     * @param message       message
+     * @param format        format
+     */
+    public void sendPrivateMessage(Player from, String targetName, String message, Format format, AsyncPlayerChatEvent event) {
+        Component sentComponents;
+        Component receivedComponents;
+
+        Player to = plugin.getServer().getPlayer(targetName);
+
+        // if null, return
+        if (format == null) {
+            // build components default message
+            // this only happens if it's not possible to find a chat format
+            sentComponents = Messages.getInstance(plugin).pmSent
+                    .compile("%format%", ChatColor.AQUA + from.getDisplayName() + ChatColor.GRAY + "> " + message);
+            receivedComponents = Messages.getInstance(plugin).pmReceived
+                    .compile("%format%", ChatColor.AQUA + from.getDisplayName() + ChatColor.GRAY + "> " + message);
+        } else { // if not null
+            // get baseComponents from live builder
+
+            Component messageComponent;
+
+            if (SpaceChatConfigKeys.USE_RELATIONAL_PLACEHOLDERS.get(plugin.getSpaceChatConfig().getAdapter()) && !plugin.getServerSyncServiceManager().isUsingNetwork()) {
+                messageComponent = new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(from, to, message, format));
+            } else {
+                messageComponent = new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(from, message, format));
+            }
+
+            sentComponents = Messages.getInstance(plugin).pmSent.compile(ImmutableMap.of("%format%", messageComponent));
+            receivedComponents = Messages.getInstance(plugin).pmReceived.compile(ImmutableMap.of("%format%", messageComponent));
+        }
+
+        // log to storage
+        plugin.getLogManagerImpl()
+                .log(new LogPrivateChatWrapper(LogType.PRIVATE_CHAT, from.getName(), from.getUniqueId(), targetName, message, new Date()),
+                        LogType.PRIVATE_CHAT,
+                        LogToType.STORAGE
+                );
+
+        sendComponentMessage(Identity.identity(from.getUniqueId()), sentComponents, from);
+
+        if (to != null) {
+            plugin.getUserManager().use(to.getUniqueId(), user -> {
+                if (user.isIgnored(from.getUniqueId())) {
+                    Messages.getInstance(plugin).pmIgnoredByTarget.message(from, "%user%", to.getName());
+                } else {
+                    sendComponentMessage(Identity.identity(from.getUniqueId()), receivedComponents, to);
+                    user.setLastMessaged(from.getName());
+                }
+            });
+        } else {
+            // send via redis (it won't do anything if redis isn't enabled, so we can be sure that we aren't using dead methods that will throw an exception)
+            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), targetName, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents));
+        }
+
+        // log to console
+        plugin.getLogManagerImpl()
+                .log(from.getName() + " -> " + targetName + ": " + message, LogType.CHAT, LogToType.CONSOLE, event);
     }
 }
