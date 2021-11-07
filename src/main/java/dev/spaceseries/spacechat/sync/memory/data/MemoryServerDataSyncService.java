@@ -5,11 +5,13 @@ import dev.spaceseries.spacechat.model.manager.MapManager;
 import dev.spaceseries.spacechat.model.Channel;
 import dev.spaceseries.spacechat.sync.ServerDataSyncService;
 import dev.spaceseries.spacechat.sync.ServerSyncServiceManager;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -142,6 +144,11 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
     public String getPlayerServer(String username) {
         // the player will always be on the current server if they are online
         return plugin.getServer().getPlayer(username) != null ? "local" : null;
+    }
+
+    @Override
+    public Collection<String> getPlayers() {
+        return plugin.getServer().getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
     }
 
     private static class PlayerSubscribedChannelManager extends MapManager<UUID, List<Channel>> implements Listener {

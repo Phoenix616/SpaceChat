@@ -44,7 +44,11 @@ public class ItemChatParser extends Parser<Pair<Player, Component>, Component> {
     public ItemChatParser(SpaceChatPlugin plugin) {
         super(plugin);
         this.configuration = plugin.getSpaceChatConfig().getAdapter();
-        this.localeManager = new LocaleManager();
+        if (SpaceChatConfigKeys.ITEM_CHAT_ENABLED.get(configuration)) {
+            this.localeManager = new LocaleManager();
+        } else {
+            this.localeManager = null;
+        }
     }
 
     /**

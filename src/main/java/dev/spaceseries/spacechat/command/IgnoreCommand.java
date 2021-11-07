@@ -20,6 +20,7 @@ public class IgnoreCommand extends SpaceChatCommand {
     public class AddCommand extends BaseCommand {
 
         @Default
+        @CommandCompletion("@globalplayers")
         public void onAdd(Player player, @Single String targetName) {
             // get user
             plugin.getUserManager().getByName(targetName, (targetUser) -> {
@@ -31,12 +32,12 @@ public class IgnoreCommand extends SpaceChatCommand {
                 // get sender user
                 plugin.getUserManager().use(player.getUniqueId(), (user) -> {
                     // add ignored
-                    if (user.ignorePlayer(user)) {
+                    if (user.ignorePlayer(targetUser)) {
                         // send message
-                        Messages.getInstance(plugin).ignoreAdded.message(player, "%user%", user.getUsername());
+                        Messages.getInstance(plugin).ignoreAdded.message(player, "%user%", targetUser.getUsername());
                     } else {
                         // already ignored, send error
-                        Messages.getInstance(plugin).playerAlreadyIgnored.message(player, "%user%", user.getUsername());
+                        Messages.getInstance(plugin).playerAlreadyIgnored.message(player, "%user%", targetUser.getUsername());
                     }
                 });
             });
@@ -72,6 +73,7 @@ public class IgnoreCommand extends SpaceChatCommand {
     public class RemoveCommand extends BaseCommand {
 
         @Default
+        @CommandCompletion("@ignored")
         public void onRemove(Player player, @Single String targetName) {
             // get user
             plugin.getUserManager().getByName(targetName, (targetUser) -> {
@@ -83,12 +85,12 @@ public class IgnoreCommand extends SpaceChatCommand {
                 // get sender user
                 plugin.getUserManager().use(player.getUniqueId(), (user) -> {
                     // remove ignored
-                    if (user.unignorePlayer(user)) {
+                    if (user.unignorePlayer(targetUser)) {
                         // send message
-                        Messages.getInstance(plugin).ignoreRemoved.message(player, "%user%", user.getUsername());
+                        Messages.getInstance(plugin).ignoreRemoved.message(player, "%user%", targetUser.getUsername());
                     } else {
                         // not ignored, send error
-                        Messages.getInstance(plugin).playerNotIgnored.message(player, "%user%", user.getUsername());
+                        Messages.getInstance(plugin).playerNotIgnored.message(player, "%user%", targetUser.getUsername());
                     }
                 });
 

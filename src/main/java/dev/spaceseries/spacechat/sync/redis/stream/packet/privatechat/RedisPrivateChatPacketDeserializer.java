@@ -30,6 +30,9 @@ public class RedisPrivateChatPacketDeserializer implements JsonDeserializer<Redi
         // get target name
         String targetName = object.get("targetName") == null ? null : object.get("targetName").getAsString();
 
+        // get message
+        String message = object.get("message") == null ? null : object.get("message").getAsString();
+
         // get server identifier
         String serverIdentifier = object.get("serverIdentifier").getAsString();
         // get server display name
@@ -41,6 +44,6 @@ public class RedisPrivateChatPacketDeserializer implements JsonDeserializer<Redi
         Component component = GsonComponentSerializer.gson().deserialize(componentString);
 
         // return a new message
-        return new RedisPrivateChatPacket(sender, senderName, targetName, serverIdentifier, serverDisplayName, component);
+        return new RedisPrivateChatPacket(sender, senderName, targetName, message, serverIdentifier, serverDisplayName, component);
     }
 }

@@ -2,9 +2,9 @@ package dev.spaceseries.spacechat.command;
 
 import co.aikar.commands.annotation.CatchUnknown;
 import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.HelpCommand;
 import co.aikar.commands.annotation.Optional;
 import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
@@ -24,7 +24,7 @@ public class EnableChatCommand extends SpaceChatCommand {
 
     @Default
     @CatchUnknown
-    @HelpCommand
+    @CommandCompletion("@chattypes")
     public void onDefault(Player player, @Optional String chatType) {
         plugin.getUserManager().use(player.getUniqueId(), user -> {
             if (chatType != null) {

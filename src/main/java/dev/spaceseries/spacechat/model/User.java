@@ -76,7 +76,7 @@ public final class User {
         this.subscribedChannels = subscribedChannels;
         this.lastMessaged = lastMessaged;
         this.ignored = HashBiMap.create(ignored);
-        this.disabledChats = EnumSet.copyOf(disabledChats);
+        this.disabledChats = disabledChats.isEmpty() ? EnumSet.noneOf(ChatType.class) : EnumSet.copyOf(disabledChats);
 
         // on initialization, subscribe to stored subscribed list (parameter in constructor)
         // aka get from storage and also save to storage when a player calls one of the below methods about channel

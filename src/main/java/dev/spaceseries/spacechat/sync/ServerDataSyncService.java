@@ -3,6 +3,7 @@ package dev.spaceseries.spacechat.sync;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.model.Channel;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -88,4 +89,11 @@ public abstract class ServerDataSyncService extends ServerSyncService {
      * @return the server or null
      */
     public abstract String getPlayerServer(String username);
+
+    /**
+     * Get all known players
+     *
+     * @return all known players
+     */
+    public abstract Collection<String> getPlayers();
 }

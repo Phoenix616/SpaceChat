@@ -10,6 +10,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -171,6 +172,9 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
             jedis.set(REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())
                     .replace("%username%", username.toLowerCase(Locale.ROOT))
                     , REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()));
+
+            // also lpush to player list that contains list of all online players
+            jedis.lpush(REDIS_ONLINE_PLAYERS_KEY.get(plugin.getSpaceChatConfig().getAdapter()), username);
         }
     }
 
@@ -180,8 +184,11 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
             String key = REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())
                     .replace("%username%", username.toLowerCase(Locale.ROOT));
             String storedServer = jedis.get(key);
-            if (storedServer != null && storedServer.equals(REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()))) {
+            if (storedServer == null || storedServer.equals(REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()))) {
                 jedis.del(key);
+
+                // also lrem from player list that contains list of all online players
+                jedis.lrem(REDIS_ONLINE_PLAYERS_KEY.get(plugin.getSpaceChatConfig().getAdapter()), 0, username);
             }
         }
     }
@@ -191,6 +198,15 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
         try (Jedis jedis = pool.getResource()) {
             return jedis.get(REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())
                     .replace("%username%", username.toLowerCase(Locale.ROOT)));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public Collection<String> getPlayers() {
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.lrange(REDIS_ONLINE_PLAYERS_KEY.get(plugin.getSpaceChatConfig().getAdapter()), 0, -1);
         } catch (Exception e) {
             return null;
         }

@@ -117,6 +117,7 @@ redis:
   player-current-channel-key: "spacechat:channels:%uuid%:current"
   channels-subscribed-uuids-list-key: "spacechat:channels:%channel%"
   online-players-server-key: "spacechat:onlineplayers:%username%:server"
+  online-players-list-key: "spacechat:onlineplayers"
 
 #=#=#=#=#=#=#=#=#=#=#=#=#
 #      Misc Settings    #

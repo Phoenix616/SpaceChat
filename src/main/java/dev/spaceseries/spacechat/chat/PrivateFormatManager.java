@@ -64,8 +64,19 @@ public class PrivateFormatManager extends FormatManager<ChatFormat> {
     public void send(Player player, String targetName, String message) {
         ChatManager chatManager = plugin.getChatManager();
 
-        // get applicable format
-        ChatFormat applicableFormat = getAll()
+        ChatFormat applicableFormat = getFormat(player);
+
+        chatManager.sendPrivateMessage(player, targetName, message, applicableFormat == null ? null : applicableFormat.getFormat(), null);
+    }
+
+    /**
+     * Get applicable format
+     *
+     * @param player The player to get the format for
+     * @return The format
+     */
+    public ChatFormat getFormat(Player player) {
+        return getAll()
                 .values()
                 .stream()
                 .filter(format -> player.hasPermission(format.getPermission()) || format.getHandle().equals("default")) // player has permission OR the format is default
@@ -73,7 +84,5 @@ public class PrivateFormatManager extends FormatManager<ChatFormat> {
                 .orElse(getAll().values().stream()
                         .findFirst()
                         .orElse(null));
-
-        chatManager.sendPrivateMessage(player, targetName, message, applicableFormat == null ? null : applicableFormat.getFormat(), null);
     }
 }

@@ -190,6 +190,8 @@ public class Messages {
         ignoreListHead = Message.fromConfigurationSection("ignore.list.head", this.getLangConfiguration());
         ignoreListEntry = Message.fromConfigurationSection("ignore.list.entry", this.getLangConfiguration());
         ignoreListFooter = Message.fromConfigurationSection("ignore.list.footer", this.getLangConfiguration());
+        pmSent = Message.fromConfigurationSection("privatemessage.sent", this.getLangConfiguration());
+        pmReceived = Message.fromConfigurationSection("privatemessage.received", this.getLangConfiguration());
         pmPlayerNotFound = Message.fromConfigurationSection("privatemessage.player-not-found", this.getLangConfiguration());
         pmTargetIgnored = Message.fromConfigurationSection("privatemessage.target-ignored", this.getLangConfiguration());
         pmIgnoredByTarget = Message.fromConfigurationSection("privatemessage.ignored-by-target", this.getLangConfiguration());

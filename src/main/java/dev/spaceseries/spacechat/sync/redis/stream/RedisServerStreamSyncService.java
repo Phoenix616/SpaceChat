@@ -1,12 +1,16 @@
 package dev.spaceseries.spacechat.sync.redis.stream;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
+import dev.spaceseries.spacechat.api.wrapper.Trio;
+import dev.spaceseries.spacechat.builder.live.NormalLiveChatFormatBuilder;
 import dev.spaceseries.spacechat.chat.ChatManager;
 import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
 import dev.spaceseries.spacechat.model.ChatType;
+import dev.spaceseries.spacechat.model.formatting.Format;
 import dev.spaceseries.spacechat.sync.ServerStreamSyncService;
 import dev.spaceseries.spacechat.sync.ServerSyncServiceManager;
 import dev.spaceseries.spacechat.sync.packet.ReceiveStreamDataPacket;
@@ -23,6 +27,7 @@ import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPriva
 import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPrivateChatPacketDeserializer;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPrivateChatPacketSerializer;
 import net.kyori.adventure.identity.Identity;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 import static dev.spaceseries.spacechat.config.SpaceChatConfigKeys.*;
@@ -156,11 +161,15 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
                 // message is error sent by plugin
                 chatManager.sendComponentMessage(Identity.nil(), chatPacket.getComponent(), to);
             } else {
+                Format format = plugin.getPrivateFormatManager().getFormat(to).getFormat();
+                Component sentComponents = Messages.getInstance(plugin).pmSent.compile(ImmutableMap.of("%format%", new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(to, chatPacket.getMessage(), format))));
+                publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), "", SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), sentComponents));
+
                 plugin.getUserManager().use(to.getUniqueId(), user -> {
                     if (!user.hasChatEnabled(ChatType.PRIVATE)) {
-                        publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), Messages.getInstance(plugin).pmChatDisabledByTarget.compile("%user%", to.getName())));
+                        publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), "", SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), Messages.getInstance(plugin).pmChatDisabledByTarget.compile("%user%", to.getName())));
                     } else if (user.isIgnored(chatPacket.getSender())) {
-                        publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), Messages.getInstance(plugin).pmIgnoredByTarget.compile("%user%", to.getName())));
+                        publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), "", SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), Messages.getInstance(plugin).pmIgnoredByTarget.compile("%user%", to.getName())));
                     } else {
                         chatManager.sendComponentMessage(Identity.identity(chatPacket.getSender()), chatPacket.getComponent(), to);
                         user.setLastMessaged(chatPacket.getSenderName());

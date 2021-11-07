@@ -3,9 +3,11 @@ package dev.spaceseries.spacechat.command;
 import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.MessageType;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
+import dev.spaceseries.spacechat.model.ChatType;
 import org.bukkit.ChatColor;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class CommandManager extends BukkitCommandManager {
 
@@ -31,5 +33,12 @@ public class CommandManager extends BukkitCommandManager {
                 new BroadcastCommand(plugin),
                 new BroadcastMinimessageCommand(plugin)
         ).forEach(this::registerCommand);
+
+        getCommandCompletions().registerAsyncCompletion("chattypes",
+                c -> Arrays.stream(ChatType.values()).map(ChatType::name).map(String::toLowerCase).collect(Collectors.toList()));
+        getCommandCompletions().registerAsyncCompletion("ignored",
+                c -> plugin.getUserManager().get(c.getPlayer().getUniqueId()).getIgnored().values());
+        getCommandCompletions().registerAsyncCompletion("globalplayers",
+                c -> plugin.getServerSyncServiceManager().getDataService().getPlayers());
     }
 }

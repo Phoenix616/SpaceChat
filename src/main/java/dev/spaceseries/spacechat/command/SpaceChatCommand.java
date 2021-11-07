@@ -59,7 +59,6 @@ public class SpaceChatCommand extends dev.spaceseries.spacechat.api.command.Spac
     }
 
     @Default
-    @CatchUnknown
     @HelpCommand
     public void onDefault(CommandSender sender) {
         // send help message

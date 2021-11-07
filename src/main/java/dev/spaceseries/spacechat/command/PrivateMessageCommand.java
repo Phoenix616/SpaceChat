@@ -1,6 +1,7 @@
 package dev.spaceseries.spacechat.command;
 
 import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.CommandPermission;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Single;
@@ -19,6 +20,7 @@ public class PrivateMessageCommand extends SpaceChatCommand {
     }
 
     @Default
+    @CommandCompletion("@globalplayers")
     public void onCommand(Player player, @Single String targetName, String message) {
         String targetServer = plugin.getServerSyncServiceManager().getDataService().getPlayerServer(targetName);
         if (targetServer != null) {

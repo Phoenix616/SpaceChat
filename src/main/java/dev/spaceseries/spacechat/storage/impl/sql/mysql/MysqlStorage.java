@@ -12,6 +12,7 @@ import dev.spaceseries.spacechat.storage.Storage;
 import dev.spaceseries.spacechat.storage.StorageInitializationException;
 import dev.spaceseries.spacechat.storage.impl.sql.mysql.factory.MySqlConnectionFactory;
 import dev.spaceseries.spacechat.util.date.DateUtil;
+import net.kyori.adventure.identity.Identity;
 import org.bukkit.Bukkit;
 
 import java.sql.Connection;
@@ -105,7 +106,7 @@ public class MysqlStorage extends Storage {
             SqlHelper.execute(mysqlConnectionFactory.getConnection(), String.format(MysqlStorage.LOG_PRIVATE_CHAT_CREATION_STATEMENT, STORAGE_MYSQL_TABLES_PRIVATE_CHAT_LOGS.get(plugin.getSpaceChatConfig().getAdapter())));
             SqlHelper.execute(mysqlConnectionFactory.getConnection(), String.format(MysqlStorage.USERS_CREATION_STATEMENT, STORAGE_MYSQL_TABLES_USERS.get(plugin.getSpaceChatConfig().getAdapter())));
             SqlHelper.execute(mysqlConnectionFactory.getConnection(), String.format(MysqlStorage.USERS_SUBSCRIBED_CHANNELS_CREATION_STATEMENT, STORAGE_MYSQL_TABLES_SUBSCRIBED_CHANNELS.get(plugin.getSpaceChatConfig().getAdapter())));
-            SqlHelper.execute(mysqlConnectionFactory.getConnection(), String.format(MysqlStorage.USERS_IGNORED_USERS_CREATION_STATEMENT, STORAGE_MYSQL_TABLES_SUBSCRIBED_CHANNELS.get(plugin.getSpaceChatConfig().getAdapter())));
+            SqlHelper.execute(mysqlConnectionFactory.getConnection(), String.format(MysqlStorage.USERS_IGNORED_USERS_CREATION_STATEMENT, STORAGE_MYSQL_TABLES_IGNORED_USERS.get(plugin.getSpaceChatConfig().getAdapter())));
         } catch (SQLException e) {
             e.printStackTrace();
             throw new StorageInitializationException();
@@ -165,6 +166,7 @@ public class MysqlStorage extends Storage {
 
             // disabled chats
             List<ChatType> disabledChats = Arrays.stream(resultSet.getString("disabledChats").split(","))
+                    .filter(s -> !s.isEmpty())
                     .map(name -> {
                         try {
                             return ChatType.valueOf(name);
@@ -280,6 +282,7 @@ public class MysqlStorage extends Storage {
 
             // disabled chats
             List<ChatType> disabledChats = Arrays.stream(resultSet.getString("disabledChats").split(","))
+                    .filter(s -> !s.isEmpty())
                     .map(name -> {
                         try {
                             return ChatType.valueOf(name);
@@ -411,6 +414,10 @@ public class MysqlStorage extends Storage {
      * @param ignored ignored UUIDs
      */
     private void insertIgnoredRows(UUID uuid, Collection<UUID> ignored) {
+        if (ignored.isEmpty()) {
+            return;
+        }
+
         // create prepared statement
         try (Connection connection = mysqlConnectionFactory.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(INSERT_IGNORED_USER)) {
             // replace
@@ -434,6 +441,10 @@ public class MysqlStorage extends Storage {
      * @param ignored ignored UUIDs
      */
     private void deleteUnignoredRows(UUID uuid, Collection<UUID> ignored) {
+        if (ignored.isEmpty()) {
+            ignored = Arrays.asList(Identity.nil().uuid());
+        }
+
         // create prepared statement
         String query = DELETE_UNIGNORED_USER.replace("%ignoredids%", String.join(",", Collections.nCopies(ignored.size(), "?")));
         try (Connection connection = mysqlConnectionFactory.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(query)) {

@@ -21,12 +21,30 @@ general:
     - "&f- &d/channel mute &7<channel>"
     - "&f-   &3Unsubscribe to messages from a specific channel"
     - "&f-   &7(Seamlessly works with redis)"
+    - "&f- &d/msg &7<player> <message>"
+    - "&f-   &3Send a private message to another player"
+    - "&f-   &7(Seamlessly works with redis)"
+    - "&f- &d/ignore add &7<player>"
+    - "&f-   &3Ignore a player"
+    - "&f-   &7(Seamlessly works with redis)"
+    - "&f- &d/ignore remove &7<player>"
+    - "&f-   &3Unignore a player"
+    - "&f-   &7(Seamlessly works with redis)"
+    - "&f- &d/ignore list"
+    - "&f-   &3LList ignored players"
+    - "&f-   &7(Seamlessly works with redis)"
+    - "&f- &d/disablechat &7[public|private]"
+    - "&f-   &3Disable all or specific chats"
+    - "&f-   &7(Seamlessly works with redis)"
+    - "&f- &d/enablechat &7[public|private]"
+    - "&f-   &3Enable all or specific chats"
+    - "&f-   &7(Seamlessly works with redis)"
 chat:
   disabled:
   - "&cYou can't send messages while you have chat disabled!"
-  enable-all:
+  enabled-all:
   - "&aEnabled all chat!"
-  enable-specific:
+  enabled-specific:
   - "&aEnabled &7%type%&c chat!"
   disabled-all:
   - "&cDisabled all chat!"

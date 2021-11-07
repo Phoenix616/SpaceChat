@@ -52,6 +52,7 @@ public class SpaceChatConfigKeys {
     public static ConfigKey<String> REDIS_PLAYER_CURRENT_CHANNEL_KEY = key(c -> c.getString("redis.player-current-channel-key", null));
     public static ConfigKey<String> REDIS_CHANNELS_SUBSCRIBED_UUIDS_LIST_KEY = key(c -> c.getString("redis.channels-subscribed-uuids-list-key", null));
     public static ConfigKey<String> REDIS_ONLINE_PLAYERS_SERVER_KEY = key(c -> c.getString("redis.online-players-server-key", null));
+    public static ConfigKey<String> REDIS_ONLINE_PLAYERS_KEY = key(c -> c.getString("redis.online-players-list-key", null));
 
     public static ConfigKey<Boolean> LOGGING_CHAT_LOG_TO_STORAGE = key(c -> c.getBoolean("logging.chat.log-to-storage", true));
 

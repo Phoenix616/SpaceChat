@@ -352,7 +352,7 @@ public class ChatManager implements Manager {
      * @param format        format
      */
     public void sendPrivateMessage(Player from, String targetName, String message, Format format, AsyncPlayerChatEvent event) {
-        Component sentComponents;
+        Component sentComponents = null;
         Component receivedComponents;
 
         Player to = plugin.getServer().getPlayer(targetName);
@@ -361,23 +361,27 @@ public class ChatManager implements Manager {
         if (format == null) {
             // build components default message
             // this only happens if it's not possible to find a chat format
-            sentComponents = Messages.getInstance(plugin).pmSent
-                    .compile("%format%", ChatColor.AQUA + from.getDisplayName() + ChatColor.GRAY + "> " + message);
+            if (to != null) {
+                sentComponents = Messages.getInstance(plugin).pmSent
+                        .compile("%format%", to.getName() + ChatColor.GRAY + "> " + message);
+            }
             receivedComponents = Messages.getInstance(plugin).pmReceived
-                    .compile("%format%", ChatColor.AQUA + from.getDisplayName() + ChatColor.GRAY + "> " + message);
+                    .compile("%format%", from.getDisplayName() + ChatColor.GRAY + "> " + message);
         } else { // if not null
             // get baseComponents from live builder
-
-            Component messageComponent;
-
             if (SpaceChatConfigKeys.USE_RELATIONAL_PLACEHOLDERS.get(plugin.getSpaceChatConfig().getAdapter()) && !plugin.getServerSyncServiceManager().isUsingNetwork()) {
-                messageComponent = new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(from, to, message, format));
+
+                sentComponents = Messages.getInstance(plugin).pmSent.compile(ImmutableMap.of("%format%",
+                        new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(to, from, message, format))));
+                receivedComponents = Messages.getInstance(plugin).pmReceived.compile(ImmutableMap.of("%format%",
+                        new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(from, to, message, format))));
             } else {
-                messageComponent = new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(from, message, format));
+                if (to != null) {
+                    sentComponents = Messages.getInstance(plugin).pmSent.compile(ImmutableMap.of("%format%", new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(to, message, format))));
+                }
+                receivedComponents = Messages.getInstance(plugin).pmReceived.compile(ImmutableMap.of("%format%", new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(from, message, format))));
             }
 
-            sentComponents = Messages.getInstance(plugin).pmSent.compile(ImmutableMap.of("%format%", messageComponent));
-            receivedComponents = Messages.getInstance(plugin).pmReceived.compile(ImmutableMap.of("%format%", messageComponent));
         }
 
         // log to storage
@@ -387,9 +391,9 @@ public class ChatManager implements Manager {
                         LogToType.STORAGE
                 );
 
-        sendComponentMessage(Identity.identity(from.getUniqueId()), sentComponents, from);
 
         if (to != null) {
+            sendComponentMessage(Identity.identity(from.getUniqueId()), sentComponents, from);
             plugin.getUserManager().use(to.getUniqueId(), user -> {
                 if (!user.hasChatEnabled(ChatType.PRIVATE)) {
                     Messages.getInstance(plugin).pmChatDisabledByTarget.message(from, "%user%", to.getName());
@@ -402,7 +406,7 @@ public class ChatManager implements Manager {
             });
         } else {
             // send via redis (it won't do anything if redis isn't enabled, so we can be sure that we aren't using dead methods that will throw an exception)
-            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), targetName, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents));
+            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), targetName, message, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents));
         }
 
         // log to console
