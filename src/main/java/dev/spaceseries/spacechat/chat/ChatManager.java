@@ -15,6 +15,7 @@ import dev.spaceseries.spacechat.logging.wrap.LogPrivateChatWrapper;
 import dev.spaceseries.spacechat.logging.wrap.LogToType;
 import dev.spaceseries.spacechat.logging.wrap.LogType;
 import dev.spaceseries.spacechat.model.Channel;
+import dev.spaceseries.spacechat.model.ChatType;
 import dev.spaceseries.spacechat.model.User;
 import dev.spaceseries.spacechat.model.formatting.Format;
 import dev.spaceseries.spacechat.model.manager.Manager;
@@ -113,7 +114,7 @@ public class ChatManager implements Manager {
      */
     public void sendComponentChatMessage(UUID from, Component component, Player to) {
         User user = plugin.getUserManager().get(to.getUniqueId());
-        if (user == null || !user.isIgnored(from)) {
+        if (user == null || (user.hasChatEnabled(ChatType.PUBLIC) && !user.isIgnored(from))) {
             sendComponentMessage(Identity.identity(from), component, to);
         }
     }
@@ -164,7 +165,7 @@ public class ChatManager implements Manager {
                 .stream()
                 .filter(uuid -> {
                     User user = plugin.getUserManager().get(uuid);
-                    return user == null || !user.isIgnored(from);
+                    return user == null || (user.hasChatEnabled(ChatType.PUBLIC) && !user.isIgnored(from));
                 })
                 .map(Bukkit::getPlayer)
                 .filter(Objects::nonNull)
@@ -390,7 +391,9 @@ public class ChatManager implements Manager {
 
         if (to != null) {
             plugin.getUserManager().use(to.getUniqueId(), user -> {
-                if (user.isIgnored(from.getUniqueId())) {
+                if (!user.hasChatEnabled(ChatType.PRIVATE)) {
+                    Messages.getInstance(plugin).pmChatDisabledByTarget.message(from, "%user%", to.getName());
+                } else if (user.isIgnored(from.getUniqueId())) {
                     Messages.getInstance(plugin).pmIgnoredByTarget.message(from, "%user%", to.getName());
                 } else {
                     sendComponentMessage(Identity.identity(from.getUniqueId()), receivedComponents, to);

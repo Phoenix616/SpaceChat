@@ -37,7 +37,7 @@ public class JoinQuitListener implements Listener {
         plugin.getUserManager().use(event.getUniqueId(), (user) -> {
             // if username not equal, update
             if (!event.getName().equals(user.getUsername())) {
-                plugin.getUserManager().update(new User(plugin, user.getUuid(), event.getName(), user.getDate(), user.getSubscribedChannels(), user.getLastMessaged(), user.getIgnored()));
+                plugin.getUserManager().update(new User(plugin, user.getUuid(), event.getName(), user.getDate(), user.getSubscribedChannels(), user.getLastMessaged(), user.getIgnored(), user.getDisabledChats()));
             }
         });
     }

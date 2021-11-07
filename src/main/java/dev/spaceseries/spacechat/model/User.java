@@ -4,10 +4,13 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,6 +52,11 @@ public final class User {
     private final BiMap<UUID, String> ignored;
 
     /**
+     * Disabled chat message
+     */
+    private final Set<ChatType> disabledChats;
+
+    /**
      * Plugin context
      */
     private final SpaceChatPlugin plugin;
@@ -59,7 +67,7 @@ public final class User {
      * @param date     date
      * @param ignored
      */
-    public User(SpaceChatPlugin plugin, UUID uuid, String username, Date date, List<Channel> subscribedChannels, String lastMessaged, Map<UUID, String> ignored) {
+    public User(SpaceChatPlugin plugin, UUID uuid, String username, Date date, List<Channel> subscribedChannels, String lastMessaged, Map<UUID, String> ignored, Collection<ChatType> disabledChats) {
         this.plugin = plugin;
         this.username = username;
         this.uuid = uuid;
@@ -68,6 +76,7 @@ public final class User {
         this.subscribedChannels = subscribedChannels;
         this.lastMessaged = lastMessaged;
         this.ignored = HashBiMap.create(ignored);
+        this.disabledChats = EnumSet.copyOf(disabledChats);
 
         // on initialization, subscribe to stored subscribed list (parameter in constructor)
         // aka get from storage and also save to storage when a player calls one of the below methods about channel
@@ -203,6 +212,25 @@ public final class User {
      */
     public void setLastMessaged(String playerName) {
         this.lastMessaged = playerName;
+    }
+
+    /**
+     * Check whether a certain chat type is enabled
+     *
+     * @param chatType The chat type
+     * @return Whether the chat type is enabled
+     */
+    public boolean hasChatEnabled(ChatType chatType) {
+        return !disabledChats.contains(chatType);
+    }
+
+    /**
+     * Get the disabled chat types
+     *
+     * @return The disabled chat chat types
+     */
+    public Set<ChatType> getDisabledChats() {
+        return disabledChats;
     }
 
     /**

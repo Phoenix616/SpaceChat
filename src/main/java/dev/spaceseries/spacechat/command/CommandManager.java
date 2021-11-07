@@ -26,6 +26,8 @@ public class CommandManager extends BukkitCommandManager {
                 new PrivateMessageCommand(plugin),
                 new ReplyCommand(plugin),
                 new IgnoreCommand(plugin),
+                new EnableChatCommand(plugin),
+                new DisableChatCommand(plugin),
                 new BroadcastCommand(plugin),
                 new BroadcastMinimessageCommand(plugin)
         ).forEach(this::registerCommand);

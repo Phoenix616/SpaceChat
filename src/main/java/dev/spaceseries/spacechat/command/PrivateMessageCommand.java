@@ -7,6 +7,7 @@ import co.aikar.commands.annotation.Single;
 import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.api.command.SpaceChatCommand;
+import dev.spaceseries.spacechat.model.ChatType;
 import org.bukkit.entity.Player;
 
 @CommandPermission("space.chat.command.privatemessage")
@@ -22,7 +23,9 @@ public class PrivateMessageCommand extends SpaceChatCommand {
         String targetServer = plugin.getServerSyncServiceManager().getDataService().getPlayerServer(targetName);
         if (targetServer != null) {
             plugin.getUserManager().use(player.getUniqueId(), user -> {
-                if (!user.isIgnored(targetName)) {
+                if (!user.hasChatEnabled(ChatType.PRIVATE)) {
+                    Messages.getInstance(plugin).pmChatDisabled.message(player);
+                } else if (!user.isIgnored(targetName)) {
                     plugin.getPrivateFormatManager().send(player, targetName, message);
                 } else {
                     Messages.getInstance(plugin).pmTargetIgnored.message(player, "%user%", targetName);

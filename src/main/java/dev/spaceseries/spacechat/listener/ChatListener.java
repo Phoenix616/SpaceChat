@@ -1,7 +1,10 @@
 package dev.spaceseries.spacechat.listener;
 
+import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.model.Channel;
+import dev.spaceseries.spacechat.model.ChatType;
+import dev.spaceseries.spacechat.model.User;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -27,6 +30,13 @@ public class ChatListener implements Listener {
 
         // clear recipients to "cancel"
         event.getRecipients().clear();
+
+        // check if they have chat enabled
+        User user = plugin.getUserManager().get(event.getPlayer().getUniqueId());
+        if (user != null && !user.hasChatEnabled(ChatType.PUBLIC)) {
+            Messages.getInstance(plugin).chatDisabled.message(event.getPlayer());
+            return;
+        }
 
         // get player's current channel
         Channel current = plugin.getServerSyncServiceManager().getDataService().getCurrentChannel(event.getPlayer().getUniqueId());

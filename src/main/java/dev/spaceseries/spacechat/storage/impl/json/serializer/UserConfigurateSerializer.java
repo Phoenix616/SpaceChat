@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.model.Channel;
+import dev.spaceseries.spacechat.model.ChatType;
 import dev.spaceseries.spacechat.model.User;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class UserConfigurateSerializer implements TypeSerializer<User> {
@@ -74,9 +76,22 @@ public class UserConfigurateSerializer implements TypeSerializer<User> {
                         Map.Entry::getValue
                 ));
 
+        // disabled chats
+        List<ChatType> disabledChats = node.node("disabledChats").getList(String.class).stream()
+                .map(name -> {
+                    try {
+                        return ChatType.valueOf(name);
+                    } catch (IllegalArgumentException e) {
+                        plugin.getLogger().log(Level.WARNING, "Invalid value in user data of " + username + ": " + e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
         String lastMessaged = node.node("lastMessaged").getString();
 
-        return new User(plugin, UUID.fromString(uuidString), username, date, subscribedChannels, lastMessaged, ignored);
+        return new User(plugin, UUID.fromString(uuidString), username, date, subscribedChannels, lastMessaged, ignored, disabledChats);
     }
 
     /**

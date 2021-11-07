@@ -21,6 +21,23 @@ general:
     - "&f- &d/channel mute &7<channel>"
     - "&f-   &3Unsubscribe to messages from a specific channel"
     - "&f-   &7(Seamlessly works with redis)"
+chat:
+  disabled:
+  - "&cYou can't send messages while you have chat disabled!"
+  enable-all:
+  - "&aEnabled all chat!"
+  enable-specific:
+  - "&aEnabled &7%type%&c chat!"
+  disabled-all:
+  - "&cDisabled all chat!"
+  disabled-specific:
+  - "&cDisabled &7%type%&c chat!"
+  invalid-type:
+  - "&7%type% &cis not a valid chat type! Valid types are: &7%types%"
+  placeholder-enabled:
+  - "&aEnabled"
+  placeholder-disabled:
+  - "&cDisabled"
 channel:
   join:
     - "&aYou &ejoined &7%channel%"
@@ -57,8 +74,12 @@ privatemessage:
   - "&cCould not find specified player &7%user%&c."
   target-ignored:
   - "&cYou are ignoring &7%user%&c!"
+  disabled:
+  - "&cYou can't send messages while you have private chat disabled!"
   ignored-by-target:
   - "&7%user%&c ignores you!"
+  chat-disabled-by-target:
+  - "&7%user%&c has their private chat disabled!"
   received:
   - "&dFrom %format%"
   sent:

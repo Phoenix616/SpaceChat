@@ -55,6 +55,34 @@ public class Messages {
     public Message broadcastWrapper;
 
     /**
+     * General chat
+     */
+
+    // chat disabled
+    public Message chatDisabled;
+
+    // enabled all chat via command
+    public Message enabledAllChat;
+
+    // enabled specific chat via command
+    public Message enabledSpecificChat;
+
+    // disable all chat via command
+    public Message disabledAllChat;
+
+    // disabled specific chat via command
+    public Message disabledSpecificChat;
+
+    // input invalid chat type
+    public Message invalidChatType;
+
+    // Placeholder if chat type is enabled
+    public Message placeholderChatEnabled;
+
+    // Placeholder if chat type is disabled
+    public Message placeholderChatDisabled;
+
+    /**
      * Channel
      */
 
@@ -117,6 +145,12 @@ public class Messages {
     // target has sender ignored
     public Message pmIgnoredByTarget;
 
+    // sender has private chat disabled
+    public Message pmChatDisabled;
+
+    // target has private chat disabled
+    public Message pmChatDisabledByTarget;
+
     // player not found
     public Message pmReceived;
 
@@ -134,6 +168,14 @@ public class Messages {
         reloadFailure = Message.fromConfigurationSection("reload.failure", this.getLangConfiguration());
         broadcastArgs = Message.fromConfigurationSection("broadcast.args", this.getLangConfiguration());
         broadcastWrapper = Message.fromConfigurationSection("broadcast.wrapper", this.getLangConfiguration());
+        chatDisabled = Message.fromConfigurationSection("chat.disabled", this.getLangConfiguration());
+        enabledAllChat = Message.fromConfigurationSection("chat.enabled-all", this.getLangConfiguration());
+        enabledSpecificChat = Message.fromConfigurationSection("chat.enabled-specific", this.getLangConfiguration());
+        disabledAllChat = Message.fromConfigurationSection("chat.disabled-all", this.getLangConfiguration());
+        disabledSpecificChat = Message.fromConfigurationSection("chat.disabled-specific", this.getLangConfiguration());
+        invalidChatType = Message.fromConfigurationSection("chat.invalid-type", this.getLangConfiguration());
+        placeholderChatEnabled = Message.fromConfigurationSection("chat.placeholder-enabled", this.getLangConfiguration());
+        placeholderChatDisabled = Message.fromConfigurationSection("chat.placeholder-disabled", this.getLangConfiguration());
         channelJoin = Message.fromConfigurationSection("channel.join", this.getLangConfiguration());
         channelLeave = Message.fromConfigurationSection("channel.leave", this.getLangConfiguration());
         channelListen = Message.fromConfigurationSection("channel.listen", this.getLangConfiguration());
@@ -151,6 +193,8 @@ public class Messages {
         pmPlayerNotFound = Message.fromConfigurationSection("privatemessage.player-not-found", this.getLangConfiguration());
         pmTargetIgnored = Message.fromConfigurationSection("privatemessage.target-ignored", this.getLangConfiguration());
         pmIgnoredByTarget = Message.fromConfigurationSection("privatemessage.ignored-by-target", this.getLangConfiguration());
+        pmChatDisabled = Message.fromConfigurationSection("privatemessage.disabled", this.getLangConfiguration());
+        pmChatDisabledByTarget = Message.fromConfigurationSection("privatemessage.chat-disabled-by-target", this.getLangConfiguration());
         replyNoOneMessaged = Message.fromConfigurationSection("privatemessage.reply-no-one-messaged", this.getLangConfiguration());
     }
 

@@ -6,6 +6,7 @@ import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.chat.ChatManager;
 import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
+import dev.spaceseries.spacechat.model.ChatType;
 import dev.spaceseries.spacechat.sync.ServerStreamSyncService;
 import dev.spaceseries.spacechat.sync.ServerSyncServiceManager;
 import dev.spaceseries.spacechat.sync.packet.ReceiveStreamDataPacket;
@@ -156,8 +157,9 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
                 chatManager.sendComponentMessage(Identity.nil(), chatPacket.getComponent(), to);
             } else {
                 plugin.getUserManager().use(to.getUniqueId(), user -> {
-                    // Check for ignored
-                    if (user.isIgnored(chatPacket.getSender())) {
+                    if (!user.hasChatEnabled(ChatType.PRIVATE)) {
+                        publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), Messages.getInstance(plugin).pmChatDisabledByTarget.compile("%user%", to.getName())));
+                    } else if (user.isIgnored(chatPacket.getSender())) {
                         publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), Messages.getInstance(plugin).pmIgnoredByTarget.compile("%user%", to.getName())));
                     } else {
                         chatManager.sendComponentMessage(Identity.identity(chatPacket.getSender()), chatPacket.getComponent(), to);

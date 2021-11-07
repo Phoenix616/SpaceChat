@@ -6,6 +6,7 @@ import dev.spaceseries.spacechat.logging.wrap.LogChatWrapper;
 import dev.spaceseries.spacechat.logging.wrap.LogPrivateChatWrapper;
 import dev.spaceseries.spacechat.logging.wrap.LogWrapper;
 import dev.spaceseries.spacechat.model.Channel;
+import dev.spaceseries.spacechat.model.ChatType;
 import dev.spaceseries.spacechat.model.User;
 import dev.spaceseries.spacechat.storage.Storage;
 import dev.spaceseries.spacechat.storage.StorageInitializationException;
@@ -18,6 +19,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static dev.spaceseries.spacechat.config.SpaceChatConfigKeys.*;
 
@@ -47,13 +50,14 @@ public class MysqlStorage extends Storage {
             "`username` TEXT NOT NULL,\n" +
             "`date` TEXT NOT NULL,\n" +
             "`lastMessaged` TEXT,\n" +
+            "`disabledChats` TEXT,\n" +
             "`id` INT NOT NULL AUTO_INCREMENT,\n" +
             "PRIMARY KEY (`id`)\n" +
             ");";
     private final String CREATE_USER = "INSERT INTO " + STORAGE_MYSQL_TABLES_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " (uuid, username, date) VALUES(?, ?, ?);";
     private final String SELECT_USER = "SELECT * FROM " + STORAGE_MYSQL_TABLES_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " WHERE uuid=?;";
     private final String SELECT_USER_USERNAME = "SELECT * FROM " + STORAGE_MYSQL_TABLES_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " WHERE username=?;";
-    private final String UPDATE_USER = "UPDATE " + STORAGE_MYSQL_TABLES_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " SET username=?,lastMessaged=? WHERE uuid=?;";
+    private final String UPDATE_USER = "UPDATE " + STORAGE_MYSQL_TABLES_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " SET username=?,lastMessaged=?,disabledChats=? WHERE uuid=?;";
     public static final String USERS_SUBSCRIBED_CHANNELS_CREATION_STATEMENT = "CREATE TABLE IF NOT EXISTS `%s` (\n" +
             "`uuid` TEXT NOT NULL,\n" +
             "`channel` TEXT NOT NULL,\n" +
@@ -142,7 +146,7 @@ public class MysqlStorage extends Storage {
                         .orElse("");
 
                 // create new user
-                User user = new User(plugin, uuid, username, new Date(), new ArrayList<>(), null, new HashMap<>());
+                User user = new User(plugin, uuid, username, new Date(), new ArrayList<>(), null, new HashMap<>(), new ArrayList<>());
                 createUser(user);
                 return user;
             }
@@ -159,7 +163,20 @@ public class MysqlStorage extends Storage {
             // get ignored users
             Map<UUID, String> ignoredUsers = getIgnoredUsers(uuid);
 
-            return new User(plugin, uuid, username, date, subscribedChannels, lastMessaged, ignoredUsers);
+            // disabled chats
+            List<ChatType> disabledChats = Arrays.stream(resultSet.getString("disabledChats").split(","))
+                    .map(name -> {
+                        try {
+                            return ChatType.valueOf(name);
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().log(Level.WARNING, "Invalid value in user data of " + username + ": " + e.getMessage());
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            return new User(plugin, uuid, username, date, subscribedChannels, lastMessaged, ignoredUsers, disabledChats);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
 
@@ -261,7 +278,20 @@ public class MysqlStorage extends Storage {
             // get ignored
             Map<UUID, String> ignored = getIgnoredUsers(uuid);
 
-            return new User(plugin, uuid, username, date, subscribedChannels, lastMessaged, ignored);
+            // disabled chats
+            List<ChatType> disabledChats = Arrays.stream(resultSet.getString("disabledChats").split(","))
+                    .map(name -> {
+                        try {
+                            return ChatType.valueOf(name);
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().log(Level.WARNING, "Invalid value in user data of " + username + ": " + e.getMessage());
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            return new User(plugin, uuid, username, date, subscribedChannels, lastMessaged, ignored, disabledChats);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             return null;
@@ -301,7 +331,8 @@ public class MysqlStorage extends Storage {
             // replace
             preparedStatement.setString(1, user.getUsername());
             preparedStatement.setString(2, user.getLastMessaged());
-            preparedStatement.setString(3, user.getUuid().toString());
+            preparedStatement.setString(3, user.getDisabledChats().stream().map(ChatType::name).collect(Collectors.joining(",")));
+            preparedStatement.setString(4, user.getUuid().toString());
 
             // execute
             preparedStatement.execute();
@@ -323,6 +354,7 @@ public class MysqlStorage extends Storage {
                 }
                 insertChannelRow(user.getUuid(), channel);
             });
+
 
             deleteUnignoredRows(user.getUuid(), user.getIgnored().keySet());
             insertIgnoredRows(user.getUuid(), user.getIgnored().keySet());

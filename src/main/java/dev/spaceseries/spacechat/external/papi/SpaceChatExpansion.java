@@ -1,7 +1,11 @@
 package dev.spaceseries.spacechat.external.papi;
 
+import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
+import dev.spaceseries.spacechat.model.ChatType;
+import dev.spaceseries.spacechat.model.User;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.OfflinePlayer;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
@@ -90,6 +94,24 @@ public class SpaceChatExpansion extends PlaceholderExpansion {
         // server-displayname
         if (identifier.equalsIgnoreCase("server-displayname")) {
             return SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter());
+        }
+
+        if (player.isOnline() && identifier.equalsIgnoreCase("public-chat-status")) {
+            User user = plugin.getUserManager().get(player.getUniqueId());
+            return LegacyComponentSerializer.legacySection().serialize(
+                    (user.hasChatEnabled(ChatType.PUBLIC)
+                            ? Messages.getInstance(plugin).placeholderChatEnabled
+                            : Messages.getInstance(plugin).placeholderChatDisabled
+            ).compile());
+        }
+
+        if (player.isOnline() && identifier.equalsIgnoreCase("private-chat-status")) {
+            User user = plugin.getUserManager().get(player.getUniqueId());
+            return LegacyComponentSerializer.legacySection().serialize(
+                    (user.hasChatEnabled(ChatType.PRIVATE)
+                            ? Messages.getInstance(plugin).placeholderChatEnabled
+                            : Messages.getInstance(plugin).placeholderChatDisabled
+            ).compile());
         }
 
         // We return null if an invalid placeholder

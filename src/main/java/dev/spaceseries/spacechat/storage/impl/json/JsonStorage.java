@@ -93,7 +93,7 @@ public class JsonStorage extends Storage {
 
             if (user == null) {
                 // since it's null, create it
-                user = new User(plugin, uuid, null, Date.from(Instant.now()), new ArrayList<>(), null, new HashMap<>());
+                user = new User(plugin, uuid, null, Date.from(Instant.now()), new ArrayList<>(), null, new HashMap<>(), new ArrayList<>());
 
                 // add to configuration file
                 usersList.add(user);
