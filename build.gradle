@@ -86,10 +86,6 @@ dependencies {
     // nbt api
     implementation 'de.tr7zw:item-nbt-api-plugin:2.8.0'
 
-    // nbt api (second)
-    // https://mvnrepository.com/artifact/io.github.jglrxavpok.hephaistos/common
-    implementation group: 'io.github.jglrxavpok.hephaistos', name: 'common', version: '2.2.0'
-
     // locale library
     implementation 'com.github.PikaMug:LocaleLib:2.2'
 }

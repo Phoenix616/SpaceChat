@@ -1,13 +1,16 @@
 package dev.spaceseries.spacechat.parser.itemchat;
 
+import de.tr7zw.nbtapi.NBTCompound;
+import de.tr7zw.nbtapi.NBTContainer;
+import de.tr7zw.nbtapi.NBTItem;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.api.config.generic.adapter.ConfigurationAdapter;
 import dev.spaceseries.spacechat.api.wrapper.Pair;
 import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
 import dev.spaceseries.spacechat.parser.Parser;
-import dev.spaceseries.spacechat.util.nbt.NBTUtil;
 import me.pikamug.localelib.LocaleManager;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TextReplacementConfig;
@@ -18,7 +21,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 
 import java.util.Iterator;
 import java.util.List;
@@ -85,7 +87,7 @@ public class ItemChatParser extends Parser<Pair<Player, Component>, Component> {
 
         // replacement config for %item% and %amount%
         TextReplacementConfig nameReplacementConfig = TextReplacementConfig.builder()
-                .matchLiteral("%name%").replacement(TextComponent.ofChildren(name))
+                .matchLiteral("%name%").replacement(Component.text().append(name))
                 .build();
 
         TextReplacementConfig amountReplacementConfig = TextReplacementConfig.builder()
@@ -131,7 +133,7 @@ public class ItemChatParser extends Parser<Pair<Player, Component>, Component> {
             // show item
 
             // get namespaced key
-            NBTCompound compound = NBTUtil.compoundFromItemStack(itemStack);
+            NBTContainer compound = NBTItem.convertItemtoNBT(itemStack);
             String compoundId = compound != null ? compound.getString("id") : null;
             Key key;
 
@@ -147,7 +149,8 @@ public class ItemChatParser extends Parser<Pair<Player, Component>, Component> {
                 }
             }
 
-            hoverEvent = HoverEvent.showItem(key, itemStack.getAmount(), NBTUtil.fromItemStack(itemStack));
+            NBTCompound tag = compound.getCompound("tag");
+            hoverEvent = HoverEvent.showItem(key, itemStack.getAmount(), tag != null ? BinaryTagHolder.of(tag.toString()) : null);
         }
 
         itemMessage = itemMessage.hoverEvent(hoverEvent);
