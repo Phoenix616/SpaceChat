@@ -22,11 +22,12 @@ public class CommandManager extends BukkitCommandManager {
         setFormat(MessageType.ERROR, ChatColor.RED);
         setFormat(MessageType.SYNTAX, ChatColor.GRAY);
 
+        PrivateMessageCommand pmCommand = new PrivateMessageCommand(plugin);
         Arrays.asList(
                 new SpaceChatCommand(plugin),
                 new ChannelCommand(plugin),
-                new PrivateMessageCommand(plugin),
-                new ReplyCommand(plugin),
+                pmCommand,
+                new ReplyCommand(plugin, pmCommand),
                 new IgnoreCommand(plugin),
                 new EnableChatCommand(plugin),
                 new DisableChatCommand(plugin),
