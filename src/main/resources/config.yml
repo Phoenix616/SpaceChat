@@ -154,15 +154,21 @@ item-chat:
 # <!> <!> <!> <!> <!> You can only enable this if your server is [NOT] USING MULTI-SERVER CAPABILITIES (redis, etc) <!> <!> <!> <!> <!> Y
 use-relational-placeholders: false
 
-#=#=#=#=#=#=#=#=#=#=#=#=#=#
-# Permissions             #
-#                         #
-# For:                    #
-# Using chat colors (&)   #
-# Using chat links        #
-# Using item chat ([item])#
-#=#=#=#=#=#=#=#=#=#=#=#=#=#
+#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#
+# Permissions                   #
+#                               #
+# For:                          #
+# Using chat colors (&)         #
+# Using chat links              #
+# Using item chat ([item])      #
+# Bypass ignores                #
+# Bypass disabled public chat   #
+# Bypass disabled private chat  #
+#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#
 permissions:
   use-chat-colors: "space.chat.chatcolor"
   use-chat-links: "space.chat.chatlinks"
   use-item-chat: "space.chat.item-chat"
+  bypass-ignore: "space.chat.bypass.ignore"
+  bypass-disabled-public-chat: "space.chat.bypass.disabled.public"
+  bypass-disabled-private-chat: "space.chat.bypass.disabled.private"

@@ -41,9 +41,19 @@ public class RedisChatPacket extends RedisPacket implements SendStreamDataPacket
     private Component component;
 
     /**
+     * Whether the sender can bypass ignores
+     */
+    private boolean canBypassIgnore;
+
+    /**
+     * Whether the sender can bypass disabled private chat
+     */
+    private boolean canBypassDisabled;
+
+    /**
      * Construct redis chat message
      */
-    public RedisChatPacket(UUID sender, String senderName, Channel channel, String serverIdentifier, String serverDisplayName, Component component) {
+    public RedisChatPacket(UUID sender, String senderName, Channel channel, String serverIdentifier, String serverDisplayName, Component component, boolean canBypassIgnore, boolean canBypassDisabled) {
         this();
         this.sender = sender;
         this.senderName = senderName;
@@ -51,6 +61,8 @@ public class RedisChatPacket extends RedisPacket implements SendStreamDataPacket
         this.serverIdentifier = serverIdentifier;
         this.serverDisplayName = serverDisplayName;
         this.component = component;
+        this.canBypassIgnore = canBypassIgnore;
+        this.canBypassDisabled = canBypassDisabled;
     }
 
     /**
@@ -166,5 +178,39 @@ public class RedisChatPacket extends RedisPacket implements SendStreamDataPacket
      */
     public void setServerDisplayName(String serverDisplayName) {
         this.serverDisplayName = serverDisplayName;
+    }
+
+    /**
+     * Get whether the sender can bypass ignores
+     *
+     * @return Whether the sender can bypass ignores
+     */
+    public boolean canBypassIgnore() {
+        return canBypassIgnore;
+    }
+
+    /**
+     * Set whether the sender can bypass ignores
+     * @param canBypassIgnore Whether the sender can bypass ignores
+     */
+    public void setCanBypassIgnore(boolean canBypassIgnore) {
+        this.canBypassIgnore = canBypassIgnore;
+    }
+
+    /**
+     * Get whether the sender can bypass disabled private chat
+     *
+     * @return Whether the sender can bypass disabled private chat
+     */
+    public boolean canBypassDisabled() {
+        return canBypassDisabled;
+    }
+
+    /**
+     * Set whether the sender can bypass disabled private chat
+     * @param canBypassDisabled Whether the sender can bypass disabled private chat
+     */
+    public void setCanBypassDisabled(boolean canBypassDisabled) {
+        this.canBypassDisabled = canBypassDisabled;
     }
 }

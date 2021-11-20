@@ -5,8 +5,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dev.spaceseries.spacechat.SpaceChatPlugin;
-import dev.spaceseries.spacechat.model.Channel;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
@@ -43,7 +41,13 @@ public class RedisPrivateChatPacketDeserializer implements JsonDeserializer<Redi
         // deserialize
         Component component = GsonComponentSerializer.gson().deserialize(componentString);
 
+        // get ignore bypass
+        boolean canBypassIgnore = object.get("canBypassIgnore").getAsBoolean();
+
+        // get chat disable bypass
+        boolean canBypassDisabled = object.get("canBypassDisabled").getAsBoolean();
+
         // return a new message
-        return new RedisPrivateChatPacket(sender, senderName, targetName, message, serverIdentifier, serverDisplayName, component);
+        return new RedisPrivateChatPacket(sender, senderName, targetName, message, serverIdentifier, serverDisplayName, component, canBypassIgnore, canBypassDisabled);
     }
 }

@@ -84,9 +84,9 @@ public class ChatManager implements Manager {
      * @param from      sender UUID
      * @param component component
      */
-    public void sendComponentChatMessage(UUID from, Component component) {
+    public void sendComponentChatMessage(UUID from, Component component, boolean canBypassIgnore, boolean canBypassDisabled) {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            sendComponentChatMessage(from, component, player);
+            sendComponentChatMessage(from, component, player, canBypassIgnore, canBypassDisabled);
         }
     }
 
@@ -98,7 +98,7 @@ public class ChatManager implements Manager {
      *
      * @param component component
      * @param to        to
-     * @deprecated Use {@link #sendComponentChatMessage(UUID, Component, Player)}
+     * @deprecated Use {@link #sendComponentChatMessage(UUID, Component, Player, boolean, boolean)}
      */
     @Deprecated
     public void sendComponentChatMessage(Component component, Player to) {
@@ -111,11 +111,13 @@ public class ChatManager implements Manager {
      * @param from      sender UUID
      * @param component component
      * @param to        to
+     * @param canBypassIgnore   sender bypasses ignores
+     * @param canBypassDisabled sender bypasses disabled chat
      */
-    public void sendComponentChatMessage(UUID from, Component component, Player to) {
+    public void sendComponentChatMessage(UUID from, Component component, Player to, boolean canBypassIgnore, boolean canBypassDisabled) {
         User user = plugin.getUserManager().get(to.getUniqueId());
-        if (user == null || (user.hasChatEnabled(ChatType.PUBLIC) && !user.isIgnored(from))) {
-            sendComponentMessage(Identity.identity(from), component, to);
+        if (user == null || ((user.hasChatEnabled(ChatType.PUBLIC) || canBypassDisabled) && (!user.isIgnored(from) || canBypassIgnore))) {
+            sendComponentMessage(canBypassIgnore ? Identity.nil() : Identity.identity(from), component, to);
         }
     }
 
@@ -155,17 +157,18 @@ public class ChatManager implements Manager {
 
     /**
      * Send a raw component to a channel
-     *
-     * @param component component
+     *  @param component component
      * @param channel   channel
+     * @param canBypassIgnore sender bypasses ignores
+     * @param canBypassDisabled sender bypasses disabled public chats
      */
-    public void sendComponentChannelMessage(UUID from, Component component, Channel channel) {
+    public void sendComponentChannelMessage(UUID from, Component component, Channel channel, boolean canBypassIgnore, boolean canBypassDisabled) {
         // get all subscribed players to that channel
         List<Player> subscribedPlayers = serverDataSyncService.getSubscribedUUIDs(channel)
                 .stream()
                 .filter(uuid -> {
                     User user = plugin.getUserManager().get(uuid);
-                    return user == null || (user.hasChatEnabled(ChatType.PUBLIC) && !user.isIgnored(from));
+                    return user == null || ((user.hasChatEnabled(ChatType.PUBLIC) || canBypassDisabled) && (!user.isIgnored(from) || canBypassIgnore));
                 })
                 .map(Bukkit::getPlayer)
                 .filter(Objects::nonNull)
@@ -203,6 +206,9 @@ public class ChatManager implements Manager {
      * @param event   event
      */
     public void sendChatMessage(Player from, String message, Format format, AsyncPlayerChatEvent event) {
+        boolean canBypassIgnore = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_IGNORE.get(config));
+        boolean canBypassDisabled = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_DISABLED_PUBLIC.get(config));
+
         // get player's current channel, and send through that (if null, that means 'global')
         Channel applicableChannel = serverDataSyncService.getCurrentChannel(from.getUniqueId());
 
@@ -224,10 +230,10 @@ public class ChatManager implements Manager {
 
         // if channel exists, then send through it
         if (applicableChannel != null) {
-            sendComponentChannelMessage(from.getUniqueId(), components, applicableChannel);
+            sendComponentChannelMessage(from.getUniqueId(), components, applicableChannel, canBypassIgnore, canBypassDisabled);
         } else {
             // send component message to entire server
-            sendComponentChatMessage(from.getUniqueId(), components);
+            sendComponentChatMessage(from.getUniqueId(), components, canBypassIgnore, canBypassDisabled);
         }
 
         // log to storage
@@ -238,7 +244,7 @@ public class ChatManager implements Manager {
                 );
 
         // send via redis (it won't do anything if redis isn't enabled, so we can be sure that we aren't using dead methods that will throw an exception)
-        serverStreamSyncService.publishChat(new RedisChatPacket(from.getUniqueId(), from.getName(), applicableChannel, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), components));
+        serverStreamSyncService.publishChat(new RedisChatPacket(from.getUniqueId(), from.getName(), applicableChannel, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), components, canBypassIgnore, canBypassDisabled));
 
         // log to console
         if (event != null) { // if there's an event, log w/ the event
@@ -274,6 +280,9 @@ public class ChatManager implements Manager {
      * @param event   event
      */
     public void sendRelationalChatMessage(Player from, String message, Format format, AsyncPlayerChatEvent event) {
+        boolean canBypassIgnore = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_IGNORE.get(config));
+        boolean canBypassDisabled = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_DISABLED_PUBLIC.get(config));
+
         // component to use with storage and logging
         Component sampledComponent;
 
@@ -308,7 +317,7 @@ public class ChatManager implements Manager {
             }
 
             // send to 'to-player'
-            sendComponentChatMessage(from.getUniqueId(), component, to);
+            sendComponentChatMessage(from.getUniqueId(), component, to, canBypassIgnore, canBypassDisabled);
         });
 
         // log to storage
@@ -352,6 +361,9 @@ public class ChatManager implements Manager {
      * @param format        format
      */
     public void sendPrivateMessage(Player from, String targetName, String message, Format format, AsyncPlayerChatEvent event) {
+        boolean canBypassIgnore = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_IGNORE.get(config));
+        boolean canBypassDisabled = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_DISABLED_PRIVATE.get(config));
+
         Component sentComponents = null;
         Component receivedComponents;
 
@@ -395,18 +407,18 @@ public class ChatManager implements Manager {
         if (to != null) {
             sendComponentMessage(Identity.identity(from.getUniqueId()), sentComponents, from);
             plugin.getUserManager().use(to.getUniqueId(), user -> {
-                if (!user.hasChatEnabled(ChatType.PRIVATE)) {
+                if (!user.hasChatEnabled(ChatType.PRIVATE) && !canBypassDisabled) {
                     Messages.getInstance(plugin).pmChatDisabledByTarget.message(from, "%user%", to.getName());
-                } else if (user.isIgnored(from.getUniqueId())) {
+                } else if (user.isIgnored(from.getUniqueId()) && !canBypassIgnore) {
                     Messages.getInstance(plugin).pmIgnoredByTarget.message(from, "%user%", to.getName());
                 } else {
-                    sendComponentMessage(Identity.identity(from.getUniqueId()), receivedComponents, to);
+                    sendComponentMessage(canBypassIgnore ? Identity.nil() : Identity.identity(from.getUniqueId()), receivedComponents, to);
                     user.setLastMessaged(from.getName());
                 }
             });
         } else {
             // send via redis (it won't do anything if redis isn't enabled, so we can be sure that we aren't using dead methods that will throw an exception)
-            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), targetName, message, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents));
+            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), targetName, message, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents, canBypassIgnore, canBypassDisabled));
         }
 
         // log to console

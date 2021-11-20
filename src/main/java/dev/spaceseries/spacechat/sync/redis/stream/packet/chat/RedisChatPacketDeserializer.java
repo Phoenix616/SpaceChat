@@ -47,7 +47,13 @@ public class RedisChatPacketDeserializer implements JsonDeserializer<RedisChatPa
         // deserialize
         Component component = GsonComponentSerializer.gson().deserialize(componentString);
 
+        // get ignore bypass
+        boolean canBypassIgnore = object.get("canBypassIgnore").getAsBoolean();
+
+        // get chat disable bypass
+        boolean canBypassDisabled = object.get("canBypassDisabled").getAsBoolean();
+
         // return a new message
-        return new RedisChatPacket(sender, senderName, channel, serverIdentifier, serverDisplayName, component);
+        return new RedisChatPacket(sender, senderName, channel, serverIdentifier, serverDisplayName, component, canBypassIgnore, canBypassDisabled);
     }
 }

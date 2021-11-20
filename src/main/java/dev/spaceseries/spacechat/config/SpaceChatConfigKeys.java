@@ -59,6 +59,9 @@ public class SpaceChatConfigKeys {
     public static ConfigKey<String> PERMISSIONS_USE_CHAT_COLORS = key(c -> c.getString("permissions.use-chat-colors", null));
     public static ConfigKey<String> PERMISSIONS_USE_ITEM_CHAT = key(c -> c.getString("permissions.use-item-chat", null));
     public static ConfigKey<String> PERMISSIONS_USE_CHAT_LINKS = key(c -> c.getString("permissions.use-chat-links", null));
+    public static ConfigKey<String> PERMISSIONS_BYPASS_IGNORE = key(c -> c.getString("permissions.bypass-ignore", null));
+    public static ConfigKey<String> PERMISSIONS_BYPASS_DISABLED_PUBLIC = key(c -> c.getString("permissions.bypass-disabled-public-chat", null));
+    public static ConfigKey<String> PERMISSIONS_BYPASS_DISABLED_PRIVATE = key(c -> c.getString("permissions.bypass-disabled-private-chat", null));
 
     public static ConfigKey<Boolean> BROADCAST_USE_LANG_WRAPPER = key(c -> c.getBoolean("broadcast.use-lang-wrapper", false));
 

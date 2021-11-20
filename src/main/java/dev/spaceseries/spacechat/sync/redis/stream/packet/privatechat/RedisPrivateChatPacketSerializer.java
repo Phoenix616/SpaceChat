@@ -23,6 +23,8 @@ public class RedisPrivateChatPacketSerializer implements JsonSerializer<RedisPri
         element.addProperty("serverIdentifier", src.getServerIdentifier());
         element.addProperty("serverDisplayName", src.getServerDisplayName());
         element.addProperty("component", GsonComponentSerializer.gson().serialize(src.getComponent()));
+        element.addProperty("canBypassIgnore", src.canBypassIgnore());
+        element.addProperty("canBypassDisabled", src.canBypassDisabled());
 
         return element;
     }
