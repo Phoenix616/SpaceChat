@@ -153,32 +153,7 @@ public class MysqlStorage extends Storage {
             }
 
             // build user and return
-            String username = resultSet.getString("username");
-            Date date = DateUtil.fromString(resultSet.getString("date"));
-
-            // get channels that are subscribed
-            List<Channel> subscribedChannels = getSubscribedChannels(uuid);
-
-            String lastMessaged = resultSet.getString("lastMessaged");
-
-            // get ignored users
-            Map<UUID, String> ignoredUsers = getIgnoredUsers(uuid);
-
-            // disabled chats
-            List<ChatType> disabledChats = Arrays.stream(resultSet.getString("disabledChats").split(","))
-                    .filter(s -> !s.isEmpty())
-                    .map(name -> {
-                        try {
-                            return ChatType.valueOf(name);
-                        } catch (IllegalArgumentException e) {
-                            plugin.getLogger().log(Level.WARNING, "Invalid value in user data of " + username + ": " + e.getMessage());
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-            return new User(plugin, uuid, username, date, subscribedChannels, lastMessaged, ignoredUsers, disabledChats);
+            return buildUser(resultSet);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
 
@@ -269,19 +244,31 @@ public class MysqlStorage extends Storage {
             }
 
             // build user and return
-            UUID uuid = UUID.fromString(resultSet.getString("uuid"));
-            Date date = DateUtil.fromString(resultSet.getString("date"));
+            return buildUser(resultSet);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            return null;
+        }
+    }
 
-            // get channels that are subscribed
-            List<Channel> subscribedChannels = getSubscribedChannels(uuid);
+    private User buildUser(ResultSet resultSet) throws SQLException {
+        UUID uuid = UUID.fromString(resultSet.getString("uuid"));
+        String username = resultSet.getString("username");
+        Date date = DateUtil.fromString(resultSet.getString("date"));
 
-            String lastMessaged = resultSet.getString("lastMessaged");
+        // get channels that are subscribed
+        List<Channel> subscribedChannels = getSubscribedChannels(uuid);
 
-            // get ignored
-            Map<UUID, String> ignored = getIgnoredUsers(uuid);
+        String lastMessaged = resultSet.getString("lastMessaged");
 
-            // disabled chats
-            List<ChatType> disabledChats = Arrays.stream(resultSet.getString("disabledChats").split(","))
+        // get ignored
+        Map<UUID, String> ignored = getIgnoredUsers(uuid);
+
+        // disabled chats
+        List<ChatType> disabledChats = new ArrayList<>();
+        String chatString = resultSet.getString("disabledChats");
+        if (chatString != null) {
+            Arrays.stream(chatString.split(","))
                     .filter(s -> !s.isEmpty())
                     .map(name -> {
                         try {
@@ -292,13 +279,10 @@ public class MysqlStorage extends Storage {
                         }
                     })
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-            return new User(plugin, uuid, username, date, subscribedChannels, lastMessaged, ignored, disabledChats);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return null;
+                    .forEach(disabledChats::add);
         }
+
+        return new User(plugin, uuid, username, date, subscribedChannels, lastMessaged, ignored, disabledChats);
     }
 
     /**
