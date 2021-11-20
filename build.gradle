@@ -3,7 +3,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 plugins {
     id "com.github.johnrengelman.shadow" version "7.1.0"
     id "java"
-//    id 'io.github.slimjar' version '1.3.0'
 }
 
 // naming
@@ -30,8 +29,6 @@ repositories {
 }
 
 dependencies {
-    //implementation slimjar("1.2.6")
-
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
     compileOnly group: 'org.jetbrains', name: 'annotations', version: '16.0.1'
 
@@ -64,10 +61,6 @@ dependencies {
     // acf
     implementation "co.aikar:acf-bukkit:0.5.0-SNAPSHOT"
 
-    // mysql
-    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    //slim group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
-
     // jedis
     implementation 'redis.clients:jedis:3.6.3'
 
@@ -94,25 +87,17 @@ artifacts {
     archives shadowJar
 }
 
-jar {
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
 shadowJar {
+    exclude 'META-INF', 'META-INF/**', 'com/google/gson/**'
     minimize {
         exclude(dependency(group: 'com.github.ben-manes.caffeine', name: 'caffeine'))
     }
     archiveName("SpaceChat-${project.version}.jar")
-/*}
 
-slimJar {*/
     relocate 'dev.spaceseries.spaceapi', "${packageGroup}.lib.spaceapi"
     relocate 'org.bstats', "${packageGroup}.lib.bstats"
     relocate 'net.kyori', "${packageGroup}.lib.kyori"
     relocate 'com.github.benmanes.caffeine', "${packageGroup}.lib.caffeine"
-    //relocate 'com.mysql', "${packageGroup}.lib.mysql"
     relocate 'me.mattstudios.msg', "${packageGroup}.lib.msg"
     relocate "co.aikar.commands", "${packageGroup}.lib.aikar.commands"
     relocate "co.aikar.locales", "${packageGroup}.lib.aikar.locales"
@@ -120,10 +105,12 @@ slimJar {*/
     relocate "com.zaxxer.hikari", "${packageGroup}.lib.hikari"
     relocate "org.spongepowered.configurate", "${packageGroup}.lib.configurate"
     relocate "io.leangen.geantyref", "${packageGroup}.lib.geantyref"
-    //relocate "io.github.slimjar", "${packageGroup}.lib.slimjar"
     relocate "de.tr7zw", "${packageGroup}.lib.tr7zw"
     relocate "me.pikamug.localelib", "${packageGroup}.lib.localelib"
-    relocate "google.protobuf", "${packageGroup}.lib.protobuf"
+    relocate "google.protobuf", "${packageGroup}.lib.google.protobuf"
+    relocate "com.google.errorprone", "${packageGroup}.lib.google.errorprone"
+    relocate "org.apache.commons.pool2", "${packageGroup}.lib.apache.commons.pool2"
+    relocate "org.checkerframework", "${packageGroup}.lib.checkerframework"
 }
 
 processResources {
