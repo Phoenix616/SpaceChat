@@ -26,6 +26,9 @@ public class SpaceChatCommand extends dev.spaceseries.spacechat.api.command.Spac
             // run async task
             CompletableFuture.runAsync(() -> {
                 try {
+                    // save all users
+                    plugin.getUserManager().getAll().forEach((key, value) -> plugin.getStorageManager().getCurrent().updateUser(value));
+
                     // load configs
                     plugin.loadConfigs();
                     // load formats
