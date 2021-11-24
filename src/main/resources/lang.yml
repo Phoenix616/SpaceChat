@@ -31,7 +31,7 @@ general:
     - "&f-   &3Unignore a player"
     - "&f-   &7(Seamlessly works with redis)"
     - "&f- &d/ignore list"
-    - "&f-   &3LList ignored players"
+    - "&f-   &3List ignored players"
     - "&f-   &7(Seamlessly works with redis)"
     - "&f- &d/disablechat &7[public|private]"
     - "&f-   &3Disable all or specific chats"
