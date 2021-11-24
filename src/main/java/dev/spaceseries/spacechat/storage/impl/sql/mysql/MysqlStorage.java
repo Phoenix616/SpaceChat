@@ -77,7 +77,7 @@ public class MysqlStorage extends Storage {
             ");";
     private final String SELECT_IGNORED_USERS = "SELECT i.ignoredid as ignoredid, u.username as ignoredname FROM " + STORAGE_MYSQL_TABLES_IGNORED_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " AS i INNER JOIN " + STORAGE_MYSQL_TABLES_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " AS u ON i.ignoredid = u.uuid WHERE i.uuid=?;";
     private final String DELETE_UNIGNORED_USER = "DELETE FROM " + STORAGE_MYSQL_TABLES_IGNORED_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " WHERE uuid=? AND ignoredid NOT IN (%ignoredids%);";
-    private final String INSERT_IGNORED_USER = "INSERT INTO " + STORAGE_MYSQL_TABLES_IGNORED_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " (uuid, ignoredid) VALUES(?, ?) ON DUPLICATE KEY IGNORE;";
+    private final String INSERT_IGNORED_USER = "INSERT INTO " + STORAGE_MYSQL_TABLES_IGNORED_USERS.get(plugin.getSpaceChatConfig().getAdapter()) + " (uuid, ignoredid) VALUES(?, ?) ON DUPLICATE KEY UPDATE ignoredid=values(ignoredid);";
 
     /**
      * The connection manager
