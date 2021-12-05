@@ -9,6 +9,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 import static dev.spaceseries.spacechat.config.SpaceChatConfigKeys.*;
@@ -42,28 +44,22 @@ public class RedisMessenger extends JedisPubSub {
 
         // subscribing to redis pub/sub is a blocking operation.
         // we need to make a new thread in order to not block the main thread....
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try (Jedis jedis = pool.getResource()) {
-                // subscribe this class to chat channel
-                jedis.subscribe(this, REDIS_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
-            }
-        });
+        new Thread(() -> {
+            // subscribe this class to chat channel
+            pool.getResource().subscribe(this, REDIS_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
+        }).start();
 
         // create a separate thread for private chat packets
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try (Jedis jedis = pool.getResource()) {
-                // subscribe this class to chat channel
-                jedis.subscribe(this, REDIS_PRIVATE_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
-            }
-        });
+        new Thread(() -> {
+            // subscribe this class to chat channel
+            pool.getResource().subscribe(this, REDIS_PRIVATE_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
+        }).start();
 
         // create a separate thread for broadcast packets
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try (Jedis jedis = pool.getResource()) {
-                // subscribe this class to chat channel
-                jedis.subscribe(this, REDIS_BROADCAST_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
-            }
-        });
+        new Thread(() -> {
+            // subscribe this class to chat channel
+            pool.getResource().subscribe(this, REDIS_BROADCAST_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
+        }).start();
     }
 
     /**
