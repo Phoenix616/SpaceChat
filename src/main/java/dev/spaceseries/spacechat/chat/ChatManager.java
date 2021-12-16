@@ -374,15 +374,13 @@ public class ChatManager implements Manager {
         if (format == null) {
             // build components default message
             // this only happens if it's not possible to find a chat format
-            if (to != null) {
-                sentComponents = Messages.getInstance(plugin).pmSent
-                        .compile(
-                                "%format%", to.getDisplayName() + ChatColor.GRAY + "> " + message,
-                                "%player_name%", to.getName(),
-                                "%player_displayname%", to.getDisplayName(),
-                                "<chat_message>", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
-                        );
-            }
+            sentComponents = Messages.getInstance(plugin).pmSent
+                    .compile(
+                            "%format%", (to != null ? to.getDisplayName() : targetName) + ChatColor.GRAY + "> " + message,
+                            "%player_name%", to != null ? to.getName() : targetName,
+                            "%player_displayname%",  to != null ? to.getDisplayName() : targetName,
+                            "<chat_message>", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
+                    );
             receivedComponents = Messages.getInstance(plugin).pmReceived
                     .compile(
                             "%format%", from.getDisplayName() + ChatColor.GRAY + "> " + message,
