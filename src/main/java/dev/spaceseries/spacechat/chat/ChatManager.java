@@ -34,7 +34,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -377,49 +380,52 @@ public class ChatManager implements Manager {
             sentComponents = Messages.getInstance(plugin).pmSent
                     .compile(
                             "%format%", (to != null ? to.getDisplayName() : targetName) + ChatColor.GRAY + "> " + message,
-                            "%player_name%", to != null ? to.getName() : targetName,
-                            "%player_displayname%",  to != null ? to.getDisplayName() : targetName,
-                            "<chat_message>", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
+                            "%receivername%", to != null ? to.getName() : targetName,
+                            "%receiverdisplayname%",  to != null ? to.getDisplayName() : targetName,
+                            "%sendername%", from.getName(),
+                            "%senderdisplayname%", from.getDisplayName(),
+                            "%message%", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
                     );
             receivedComponents = Messages.getInstance(plugin).pmReceived
                     .compile(
                             "%format%", from.getDisplayName() + ChatColor.GRAY + "> " + message,
-                            "%player_name%", to.getName(),
-                            "%player_displayname%", to.getDisplayName(),
-                            "<chat_message>", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
+                            "%receivername%", to != null ? to.getName() : targetName,
+                            "%receiverdisplayname%",  to != null ? to.getDisplayName() : targetName,
+                            "%sendername%", from.getName(),
+                            "%senderdisplayname%", from.getDisplayName(),
+                            "%message%", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
                     );
         } else { // if not null
+            Map<String, Component> generalReplacements = ImmutableMap.of(
+                    "%receivername%", Component.text(to != null ? to.getName() : targetName),
+                    "%receiverdisplayname%", LegacyComponentSerializer.legacySection().deserialize(to != null ? to.getDisplayName() : targetName),
+                    "%sendername%", Component.text(from.getName()),
+                    "%senderdisplayname%", LegacyComponentSerializer.legacySection().deserialize(from.getDisplayName()),
+                    "%message%", canUseChatColors ? LegacyComponentSerializer.legacyAmpersand().deserialize(message) : Component.text(message)
+            );
             // get baseComponents from live builder
             if (SpaceChatConfigKeys.USE_RELATIONAL_PLACEHOLDERS.get(plugin.getSpaceChatConfig().getAdapter()) && !plugin.getServerSyncServiceManager().isUsingNetwork()) {
                 if (to != null) {
-                    sentComponents = Messages.getInstance(plugin).pmSent.compile(ImmutableMap.of(
-                            "%format%", new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(to, from, message, format)),
-                            "%player_name%", Component.text(to.getName()),
-                            "%player_displayname%", LegacyComponentSerializer.legacySection().deserialize(to.getDisplayName()),
-                            "<chat_message>", canUseChatColors ? LegacyComponentSerializer.legacyAmpersand().deserialize(message) : Component.text(message)
-                    ));
+                    Map<String, Component> replacements = new LinkedHashMap<>();
+                    replacements.put("%format%", new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(to, from, message, format)));
+                    replacements.putAll(generalReplacements);
+                    sentComponents = Messages.getInstance(plugin).pmSent.compile(replacements);
                 }
-                receivedComponents = Messages.getInstance(plugin).pmReceived.compile(ImmutableMap.of(
-                        "%format%", new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(from, to, message, format)),
-                        "%player_name%", Component.text(to.getName()),
-                        "%player_displayname%", LegacyComponentSerializer.legacySection().deserialize(from.getDisplayName()),
-                        "<chat_message>", canUseChatColors ? LegacyComponentSerializer.legacyAmpersand().deserialize(message) : Component.text(message)
-                ));
+                Map<String, Component> replacements = new LinkedHashMap<>();
+                replacements.put("%format%", new RelationalLiveChatFormatBuilder(plugin).build(new Quad<>(from, to, message, format)));
+                replacements.putAll(generalReplacements);
+                receivedComponents = Messages.getInstance(plugin).pmReceived.compile(replacements);
             } else {
                 if (to != null) {
-                    sentComponents = Messages.getInstance(plugin).pmSent.compile(ImmutableMap.of(
-                            "%format%", new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(to, message, format)),
-                            "%player_name%", Component.text(to.getName()),
-                            "%player_displayname%", LegacyComponentSerializer.legacySection().deserialize(to.getDisplayName()),
-                            "<chat_message>", canUseChatColors ? LegacyComponentSerializer.legacyAmpersand().deserialize(message) : Component.text(message)
-                    ));
+                    Map<String, Component> replacements = new LinkedHashMap<>();
+                    replacements.put("%format%", new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(to, message, format)));
+                    replacements.putAll(generalReplacements);
+                    sentComponents = Messages.getInstance(plugin).pmSent.compile(replacements);
                 }
-                receivedComponents = Messages.getInstance(plugin).pmReceived.compile(ImmutableMap.of(
-                        "%format%", new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(from, message, format)),
-                        "%player_name%", Component.text(to.getName()),
-                        "%player_displayname%", LegacyComponentSerializer.legacySection().deserialize(from.getDisplayName()),
-                        "<chat_message>", canUseChatColors ? LegacyComponentSerializer.legacyAmpersand().deserialize(message) : Component.text(message)
-                ));
+                Map<String, Component> replacements = new LinkedHashMap<>();
+                replacements.put("%format%",new NormalLiveChatFormatBuilder(plugin).build(new Trio<>(from, message, format)));
+                replacements.putAll(generalReplacements);
+                receivedComponents = Messages.getInstance(plugin).pmReceived.compile(replacements);
             }
 
         }
