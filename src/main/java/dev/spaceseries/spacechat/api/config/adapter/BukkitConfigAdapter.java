@@ -6,11 +6,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 public class BukkitConfigAdapter implements ConfigurationAdapter {
     private final Plugin plugin;
@@ -26,6 +30,18 @@ public class BukkitConfigAdapter implements ConfigurationAdapter {
     @Override
     public void reload() {
         this.configuration = YamlConfiguration.loadConfiguration(this.file);
+        try (InputStream in = plugin.getResource(this.file.getName())) {
+            if (in != null) {
+                this.configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(in)));
+            }
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Could not load " + this.file.getName() + " from jar file!");
+        }
+    }
+
+    @Override
+    public String getString(String path) {
+        return this.configuration.getString(path);
     }
 
     @Override
@@ -34,8 +50,18 @@ public class BukkitConfigAdapter implements ConfigurationAdapter {
     }
 
     @Override
+    public int getInteger(String path) {
+        return this.configuration.getInt(path);
+    }
+
+    @Override
     public int getInteger(String path, int def) {
         return this.configuration.getInt(path, def);
+    }
+
+    @Override
+    public boolean getBoolean(String path) {
+        return this.configuration.getBoolean(path);
     }
 
     @Override
@@ -44,9 +70,18 @@ public class BukkitConfigAdapter implements ConfigurationAdapter {
     }
 
     @Override
+    public List<String> getStringList(String path) {
+        return this.configuration.getStringList(path);
+    }
+
+    @Override
     public List<String> getStringList(String path, List<String> def) {
-        List<String> list = this.configuration.getStringList(path);
-        return this.configuration.isSet(path) ? list : def;
+        return this.configuration.isSet(path) ? this.configuration.getStringList(path) : def;
+    }
+
+    @Override
+    public List<String> getKeys(String path) {
+        return getKeys(path, new ArrayList<>());
     }
 
     @Override
@@ -58,6 +93,11 @@ public class BukkitConfigAdapter implements ConfigurationAdapter {
 
         Set<String> keys = section.getKeys(false);
         return new ArrayList<>(keys);
+    }
+
+    @Override
+    public Map<String, String> getStringMap(String path) {
+        return getStringMap(path, new HashMap<>());
     }
 
     @Override
