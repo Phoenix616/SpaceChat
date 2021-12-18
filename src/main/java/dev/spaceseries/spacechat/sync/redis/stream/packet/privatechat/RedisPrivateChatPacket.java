@@ -20,6 +20,11 @@ public class RedisPrivateChatPacket extends RedisPacket implements SendStreamDat
     private String senderName;
 
     /**
+     * Sender display name
+     */
+    private String senderDisplayName;
+
+    /**
      * The target of this private message
      */
     private String targetName;
@@ -57,10 +62,11 @@ public class RedisPrivateChatPacket extends RedisPacket implements SendStreamDat
     /**
      * Construct redis chat message
      */
-    public RedisPrivateChatPacket(UUID sender, String senderName, String targetName, String message, String serverIdentifier, String serverDisplayName, Component component, boolean canBypassIgnore, boolean canBypassDisabled) {
+    public RedisPrivateChatPacket(UUID sender, String senderName, String senderDisplayName, String targetName, String message, String serverIdentifier, String serverDisplayName, Component component, boolean canBypassIgnore, boolean canBypassDisabled) {
         this();
         this.sender = sender;
         this.senderName = senderName;
+        this.senderDisplayName = senderDisplayName;
         this.targetName = targetName;
         this.message = message;
         this.serverIdentifier = serverIdentifier;
@@ -129,6 +135,24 @@ public class RedisPrivateChatPacket extends RedisPacket implements SendStreamDat
      */
     public void setSenderName(String senderName) {
         this.senderName = senderName;
+    }
+
+    /**
+     * Get sender display name
+     *
+     * @return sender display name
+     */
+    public String getSenderDisplayName() {
+        return senderDisplayName;
+    }
+
+    /**
+     * Set sender display name
+     *
+     * @param senderDisplayName sender display name
+     */
+    public void setSenderDisplayName(String senderDisplayName) {
+        this.senderDisplayName = senderDisplayName;
     }
 
     /**

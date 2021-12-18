@@ -61,11 +61,11 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
                 // get chat message (formatted)
                 String chatMessage = LegacyComponentSerializer
                         .legacySection()
-                        .serialize(player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter())) ? // if player has permission to use chat colors
+                        .serialize(player != null && player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter())) ? // if player has permission to use chat colors
                                 LegacyComponentSerializer // yes, the player has permission to use chat colors, so color message
                                         .legacyAmpersand()
                                         .deserialize(messageString) :
-                                Component.text(messageString)); // no, the player doesn't have permission to use chat colors, so just return the message (not colored)
+                                LegacyComponentSerializer.legacySection().deserialize(messageString)); // no, the player doesn't have permission to use chat colors, so just return the message (not colored)
 
                 // parse message
                 Component message = new MessageParser(plugin).parse(player, Component.text(chatMessage));
@@ -140,12 +140,12 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
     private LegacyComponentSerializer computeChatMessageComponentSerializer(Player player) {
         LegacyComponentSerializer.Builder legacyComponentSerializerBuilder = LegacyComponentSerializer.builder();
 
-        if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+        if (player != null && player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
             legacyComponentSerializerBuilder = legacyComponentSerializerBuilder.hexColors();
             legacyComponentSerializerBuilder = legacyComponentSerializerBuilder.character('&');
         }
 
-        if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_LINKS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+        if (player != null && player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_LINKS.get(plugin.getSpaceChatConfig().getAdapter()))) {
             legacyComponentSerializerBuilder = legacyComponentSerializerBuilder.extractUrls();
         }
 

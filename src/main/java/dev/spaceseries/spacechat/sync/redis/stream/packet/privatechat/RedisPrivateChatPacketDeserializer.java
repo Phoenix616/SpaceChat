@@ -25,6 +25,9 @@ public class RedisPrivateChatPacketDeserializer implements JsonDeserializer<Redi
         // get sender name
         String senderName = object.get("senderName").getAsString();
 
+        // get sender display name
+        String senderDisplayName = object.get("senderDisplayName").getAsString();
+
         // get target name
         String targetName = object.get("targetName") == null ? null : object.get("targetName").getAsString();
 
@@ -48,6 +51,6 @@ public class RedisPrivateChatPacketDeserializer implements JsonDeserializer<Redi
         boolean canBypassDisabled = object.get("canBypassDisabled").getAsBoolean();
 
         // return a new message
-        return new RedisPrivateChatPacket(sender, senderName, targetName, message, serverIdentifier, serverDisplayName, component, canBypassIgnore, canBypassDisabled);
+        return new RedisPrivateChatPacket(sender, senderName, senderDisplayName, targetName, message, serverIdentifier, serverDisplayName, component, canBypassIgnore, canBypassDisabled);
     }
 }

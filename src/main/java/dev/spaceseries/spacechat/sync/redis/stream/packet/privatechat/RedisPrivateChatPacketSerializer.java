@@ -18,6 +18,7 @@ public class RedisPrivateChatPacketSerializer implements JsonSerializer<RedisPri
         // add properties
         element.addProperty("senderUUID", src.getSender().toString());
         element.addProperty("senderName", src.getSenderName());
+        element.addProperty("senderDisplayName", src.getSenderDisplayName());
         element.addProperty("targetName", src.getTargetName());
         element.addProperty("message", src.getMessage());
         element.addProperty("serverIdentifier", src.getServerIdentifier());

@@ -452,7 +452,7 @@ public class ChatManager implements Manager {
             });
         } else {
             // send via redis (it won't do anything if redis isn't enabled, so we can be sure that we aren't using dead methods that will throw an exception)
-            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), targetName, message, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents, canBypassIgnore, canBypassDisabled));
+            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), from.getDisplayName(), targetName, canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents, canBypassIgnore, canBypassDisabled));
         }
 
         // log to console

@@ -65,7 +65,7 @@ public class ItemChatParser extends Parser<Pair<Player, Component>, Component> {
         Component message = playerStringPair.getRight();
 
         // if not enabled, return
-        if (!SpaceChatConfigKeys.ITEM_CHAT_ENABLED.get(configuration) || !player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_ITEM_CHAT.get(configuration))) {
+        if (player == null || !SpaceChatConfigKeys.ITEM_CHAT_ENABLED.get(configuration) || !player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_ITEM_CHAT.get(configuration))) {
             return message;
         }
 
