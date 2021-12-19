@@ -75,7 +75,16 @@ public final class User {
         this.currentChannel = null;
         this.subscribedChannels = subscribedChannels;
         this.lastMessaged = lastMessaged;
-        this.ignored = HashBiMap.create(ignored);
+        this.ignored = HashBiMap.create();
+        for (Map.Entry<UUID, String> entry : ignored.entrySet()) {
+            try {
+                this.ignored.put(entry.getKey(), entry.getValue());
+            } catch (IllegalArgumentException e) {
+                if (this.ignored.containsValue(entry.getValue())) {
+                    this.ignored.put(entry.getKey(), entry.getValue() + ":" + entry.getKey());
+                }
+            }
+        }
         this.disabledChats = disabledChats.isEmpty() ? EnumSet.noneOf(ChatType.class) : EnumSet.copyOf(disabledChats);
 
         // on initialization, subscribe to stored subscribed list (parameter in constructor)
