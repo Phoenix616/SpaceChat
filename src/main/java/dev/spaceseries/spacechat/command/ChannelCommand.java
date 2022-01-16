@@ -45,6 +45,14 @@ public class ChannelCommand extends SpaceChatCommand {
                 Messages.getInstance(plugin).channelMute.message(player, "%channel%", channel);
             });
         }
+
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send help message
+            Messages.getInstance(plugin).channelHelp.message(player);
+        }
     }
 
     @CommandPermission("space.chat.command.channel.listen")
@@ -76,6 +84,14 @@ public class ChannelCommand extends SpaceChatCommand {
                 Messages.getInstance(plugin).channelListen.message(player, "%channel%", channel);
             });
         }
+
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send help message
+            Messages.getInstance(plugin).channelHelp.message(player);
+        }
     }
 
     @CommandPermission("space.chat.command.channel.leave")
@@ -101,6 +117,14 @@ public class ChannelCommand extends SpaceChatCommand {
                 // send message
                 Messages.getInstance(plugin).channelLeave.message(player, "%channel%", current.getHandle());
             });
+        }
+
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send help message
+            Messages.getInstance(plugin).channelHelp.message(player);
         }
     }
 
@@ -133,13 +157,21 @@ public class ChannelCommand extends SpaceChatCommand {
                 Messages.getInstance(plugin).channelJoin.message(player, "%channel%", channel);
             });
         }
+
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send help message
+            Messages.getInstance(plugin).channelHelp.message(player);
+        }
     }
 
     @Default
     @CatchUnknown
     @HelpCommand
-    public void onCommand(Player player) {
+    public void onDefault(Player player) {
         // send help message
-        Messages.getInstance(plugin).generalHelp.message(player);
+        Messages.getInstance(plugin).channelHelp.message(player);
     }
 }

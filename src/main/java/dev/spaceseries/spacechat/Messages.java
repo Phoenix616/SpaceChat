@@ -86,6 +86,9 @@ public class Messages {
      * Channel
      */
 
+    // channel help
+    public Message channelHelp;
+
     // join
     public Message channelJoin;
 
@@ -107,6 +110,9 @@ public class Messages {
     /**
      * Ignore
      */
+
+    // ignore help
+    public Message ignoreHelp;
 
     // player not found
     public Message ignorePlayerNotFound;
@@ -135,6 +141,9 @@ public class Messages {
     /**
      * Private message
      */
+
+    // private message help
+    public Message pmHelp;
 
     // player not found
     public Message pmPlayerNotFound;
@@ -176,6 +185,7 @@ public class Messages {
         invalidChatType = Message.fromConfigurationSection("chat.invalid-type", this.getLangConfiguration());
         placeholderChatEnabled = Message.fromConfigurationSection("chat.placeholder-enabled", this.getLangConfiguration());
         placeholderChatDisabled = Message.fromConfigurationSection("chat.placeholder-disabled", this.getLangConfiguration());
+        channelHelp = Message.fromConfigurationSection("channel.help", this.getLangConfiguration());
         channelJoin = Message.fromConfigurationSection("channel.join", this.getLangConfiguration());
         channelLeave = Message.fromConfigurationSection("channel.leave", this.getLangConfiguration());
         channelListen = Message.fromConfigurationSection("channel.listen", this.getLangConfiguration());
@@ -187,9 +197,11 @@ public class Messages {
         playerAlreadyIgnored = Message.fromConfigurationSection("ignore.already-ignored", this.getLangConfiguration());
         ignoreRemoved = Message.fromConfigurationSection("ignore.removed", this.getLangConfiguration());
         playerNotIgnored = Message.fromConfigurationSection("ignore.not-ignored", this.getLangConfiguration());
+        ignoreHelp = Message.fromConfigurationSection("ignore.help", this.getLangConfiguration());
         ignoreListHead = Message.fromConfigurationSection("ignore.list.head", this.getLangConfiguration());
         ignoreListEntry = Message.fromConfigurationSection("ignore.list.entry", this.getLangConfiguration());
         ignoreListFooter = Message.fromConfigurationSection("ignore.list.footer", this.getLangConfiguration());
+        pmHelp = Message.fromConfigurationSection("privatemessage.help", this.getLangConfiguration());
         pmSent = Message.fromConfigurationSection("privatemessage.sent", this.getLangConfiguration());
         pmReceived = Message.fromConfigurationSection("privatemessage.received", this.getLangConfiguration());
         pmPlayerNotFound = Message.fromConfigurationSection("privatemessage.player-not-found", this.getLangConfiguration());

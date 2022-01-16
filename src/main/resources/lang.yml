@@ -69,6 +69,16 @@ channel:
     - "&cOops! We can't find a channel with the name of &7%channel%&c."
   access-denied:
     - "&cOops! You aren't allowed to interact with that channel!"
+  help:
+    - "&bSpaceChat &7&o(v2)&r &3channel help"
+    - "&f- &d/channel join &7<channel>"
+    - "&f-   &3Start talking in a specific channel"
+    - "&f- &d/channel leave"
+    - "&f-   &3Stop talking in your current channel"
+    - "&f- &d/channel listen &7<channel>"
+    - "&f-   &3Subscribe to messages from a specific channel"
+    - "&f- &d/channel mute &7<channel>"
+    - "&f-   &3Unsubscribe to messages from a specific channel"
 ignore:
   player-not-found:
     - "&cCould not find specified player."
@@ -87,23 +97,41 @@ ignore:
       - "&f- &7%name%"
     footer:
       - "&fTotal: &7%amount% ignored"
+  help:
+    - "&bSpaceChat &7&o(v2)&r &3ignore help"
+    - "&f- &d/ignore add &7<player>"
+    - "&f-   &3Ignore a player"
+    - "&f- &d/ignore remove &7<player>"
+    - "&f-   &3Unignore a player"
+    - "&f- &d/ignore list"
+    - "&f-   &3List ignored players"
 privatemessage:
   player-not-found:
-  - "&cCould not find specified player &7%user%&c."
+    - "&cCould not find specified player &7%user%&c."
   target-ignored:
-  - "&cYou are ignoring &7%user%&c!"
+    - "&cYou are ignoring &7%user%&c!"
   disabled:
-  - "&cYou can't send messages while you have private chat disabled!"
+    - "&cYou can't send messages while you have private chat disabled!"
   ignored-by-target:
-  - "&7%user%&c ignores you!"
+    - "&7%user%&c ignores you!"
   chat-disabled-by-target:
-  - "&7%user%&c has their private chat disabled!"
+    - "&7%user%&c has their private chat disabled!"
   received:
-  - "&dFrom %format%"
+    - "&dFrom %format%"
   sent:
-  - "&bTo %format%"
+    - "&bTo %format%"
   reply-no-one-messaged:
-  - "&cYou weren't messaged by anyone?"
+    - "&cYou weren't messaged by anyone?"
+  help:
+    - "&bSpaceChat &7&o(v2)&r &3private message help"
+    - "&f- &d/msg &7<player> <message>"
+    - "&f-   &3Send a private message to another player"
+    - "&f- &d/reply &7<message>"
+    - "&f-   &3Reply to the last player that messaged you"
+    - "&f- &d/disablechat private"
+    - "&f-   &3Disable private chats"
+    - "&f- &d/enablechat private"
+    - "&f-   &3Enable private chats"
 reload:
   success:
     - "&aSuccessfully reloaded &bChat"

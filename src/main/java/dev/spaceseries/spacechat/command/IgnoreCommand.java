@@ -4,6 +4,7 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
+import dev.spaceseries.spacechat.api.command.SpaceChatCommand;
 import org.bukkit.entity.Player;
 
 @CommandPermission("space.chat.command.ignore")
@@ -41,6 +42,14 @@ public class IgnoreCommand extends SpaceChatCommand {
                     }
                 });
             });
+        }
+
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send help message
+            Messages.getInstance(plugin).ignoreHelp.message(player);
         }
     }
 
@@ -96,6 +105,14 @@ public class IgnoreCommand extends SpaceChatCommand {
 
             });
         }
+
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send help message
+            Messages.getInstance(plugin).ignoreHelp.message(player);
+        }
     }
 
     @Default
@@ -103,6 +120,6 @@ public class IgnoreCommand extends SpaceChatCommand {
     @HelpCommand
     public void onDefault(Player player) {
         // send help message
-        Messages.getInstance(plugin).generalHelp.message(player);
+        Messages.getInstance(plugin).ignoreHelp.message(player);
     }
 }
