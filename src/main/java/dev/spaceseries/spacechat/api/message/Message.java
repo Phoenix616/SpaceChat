@@ -1,6 +1,7 @@
 package dev.spaceseries.spacechat.api.message;
 
 import com.google.common.base.Joiner;
+import de.themoep.minedown.adventure.Replacer;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.api.config.generic.adapter.ConfigurationAdapter;
 import me.mattstudios.msg.adventure.AdventureMessage;
@@ -139,15 +140,8 @@ public class Message {
      * @return component
      */
     private Component replace(Component component, String... replacers) {
-        // create list of replacement pairs from array
-        for (int i = 0; i < replacers.length; i += 2) {
-            String replacer = replacers[i];
-            String replacement = replacers[i + 1];
-
-            component = component.replaceText((b) -> b.matchLiteral(replacer).replacement(replacement));
-        }
-
-        return component;
+        return new Replacer().placeholderPrefix("").placeholderSuffix("")
+                .replace(replacers).replaceIn(component);
     }
 
     /**
@@ -158,15 +152,8 @@ public class Message {
      * @return component
      */
     private Component replace(Component component, Map<String, Component> replacers) {
-        // loop through replacers
-        for (Map.Entry<String, Component> entry : replacers.entrySet()) {
-            String replacer = entry.getKey();
-            Component replacement = entry.getValue();
-
-            component = component.replaceText((b) -> b.matchLiteral(replacer).replacement(replacement));
-        }
-
-        return component;
+        return new Replacer().placeholderPrefix("").placeholderSuffix("")
+                .replace(replacers).replaceIn(component);
     }
 
     /**

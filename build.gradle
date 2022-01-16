@@ -45,10 +45,10 @@ dependencies {
     implementation 'com.github.ben-manes.caffeine:caffeine:2.9.2'
 
     // adventure
-    implementation("net.kyori:adventure-api:4.9.1") {
+    implementation('net.kyori:adventure-api:4.9.3') {
         exclude group: 'net.kyori', module: 'adventure-bom'
     }
-    implementation("net.kyori:adventure-platform-bukkit:4.0.0") {
+    implementation('net.kyori:adventure-platform-bukkit:4.0.1') {
         exclude group: 'net.kyori', module: 'adventure-bom'
     }
     implementation("net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT") {
@@ -57,6 +57,9 @@ dependencies {
 
     // triumph msg adventure
     implementation "me.mattstudios:triumph-msg-adventure:2.2.4-SNAPSHOT"
+
+    // minedown adventure
+    implementation "de.themoep:minedown-adventure:1.7.2-SNAPSHOT"
 
     // acf
     implementation "co.aikar:acf-bukkit:0.5.0-SNAPSHOT"
@@ -99,6 +102,7 @@ shadowJar {
     relocate 'net.kyori', "${packageGroup}.lib.kyori"
     relocate 'com.github.benmanes.caffeine', "${packageGroup}.lib.caffeine"
     relocate 'me.mattstudios.msg', "${packageGroup}.lib.msg"
+    relocate 'de.themoep.minedown.adventure', "${packageGroup}.lib.minedown"
     relocate "co.aikar.commands", "${packageGroup}.lib.aikar.commands"
     relocate "co.aikar.locales", "${packageGroup}.lib.aikar.locales"
     relocate "redis.clients.jedis", "${packageGroup}.lib.jedis"
