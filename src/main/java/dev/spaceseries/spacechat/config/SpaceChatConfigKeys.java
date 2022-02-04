@@ -57,6 +57,7 @@ public class SpaceChatConfigKeys {
     public static ConfigKey<Boolean> LOGGING_CHAT_LOG_TO_STORAGE = key(c -> c.getBoolean("logging.chat.log-to-storage"));
 
     public static ConfigKey<String> PERMISSIONS_USE_CHAT_COLORS = key(c -> c.getString("permissions.use-chat-colors"));
+    public static ConfigKey<String> PERMISSIONS_USE_CHAT_FORMATTING = key(c -> c.getString("permissions.use-chat-formatting"));
     public static ConfigKey<String> PERMISSIONS_USE_ITEM_CHAT = key(c -> c.getString("permissions.use-item-chat"));
     public static ConfigKey<String> PERMISSIONS_USE_CHAT_LINKS = key(c -> c.getString("permissions.use-chat-links"));
     public static ConfigKey<String> PERMISSIONS_BYPASS_IGNORE = key(c -> c.getString("permissions.bypass-ignore"));

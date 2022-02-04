@@ -1,6 +1,9 @@
 package dev.spaceseries.spacechat.builder.live;
 
 import dev.spaceseries.spacechat.api.wrapper.Quad;
+import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
+import me.mattstudios.msg.adventure.AdventureMessage;
+import me.mattstudios.msg.base.MessageOptions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.TextComponent;
@@ -14,7 +17,10 @@ import dev.spaceseries.spacechat.parser.MessageParser;
 import dev.spaceseries.spacechat.replacer.AmpersandReplacer;
 import dev.spaceseries.spacechat.replacer.SectionReplacer;
 import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+
+import java.util.Locale;
 
 import static dev.spaceseries.spacechat.config.SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS;
 
@@ -63,13 +69,24 @@ public class RelationalLiveChatFormatBuilder extends LiveChatFormatBuilder imple
                 mmWithPlaceholdersReplaced = SECTION_REPLACER.apply(PlaceholderAPI.setRelationalPlaceholders(player, player2, mmWithPlaceholdersReplaced), player);
 
                 // get chat message (formatted)
-                String chatMessage = LegacyComponentSerializer
-                        .legacySection()
-                        .serialize(player.hasPermission(PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter())) ? // if player has permission to use chat colors
-                                LegacyComponentSerializer // yes, the player has permission to use chat colors, so color message
-                                        .legacyAmpersand()
-                                        .deserialize(messageString) :
-                                Component.text(messageString)); // no, the player doesn't have permission to use chat colors, so just return the message (not colored)
+                MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder();
+                if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+                    messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
+                    messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
+                    messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.GRADIENT);
+                    messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.RAINBOW);
+                }
+                String formattingPermission = SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_FORMATTING.get(plugin.getSpaceChatConfig().getAdapter());
+                for (me.mattstudios.msg.base.internal.Format f : me.mattstudios.msg.base.internal.Format.ALL) {
+                    if (player.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
+                        messageOptionsBuilder.addFormat(f);
+                    }
+                }
+
+                String chatMessage = LegacyComponentSerializer.legacySection().serialize(AdventureMessage.create(messageOptionsBuilder.build()).parse(messageString));
+                if (chatMessage.startsWith(ChatColor.WHITE.toString()) && !messageString.startsWith("&f")) {
+                    chatMessage = chatMessage.substring(2);
+                }
 
                 // parse message
                 Component message = new MessageParser(plugin).parse(player, Component.text(chatMessage));

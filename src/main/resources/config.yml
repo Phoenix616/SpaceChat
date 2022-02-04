@@ -167,6 +167,7 @@ use-relational-placeholders: false
 #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#
 permissions:
   use-chat-colors: "space.chat.chatcolor"
+  use-chat-formatting: "space.chat.formatting."
   use-chat-links: "space.chat.chatlinks"
   use-item-chat: "space.chat.item-chat"
   bypass-ignore: "space.chat.bypass.ignore"

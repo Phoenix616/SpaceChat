@@ -24,6 +24,8 @@ import dev.spaceseries.spacechat.sync.ServerStreamSyncService;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.chat.RedisChatPacket;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.privatechat.RedisPrivateChatPacket;
 import dev.spaceseries.spacechat.util.color.ColorUtil;
+import me.mattstudios.msg.adventure.AdventureMessage;
+import me.mattstudios.msg.base.MessageOptions;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -33,13 +35,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ChatManager implements Manager {
@@ -366,12 +362,33 @@ public class ChatManager implements Manager {
     public void sendPrivateMessage(Player from, String targetName, String message, Format format, AsyncPlayerChatEvent event) {
         boolean canBypassIgnore = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_IGNORE.get(config));
         boolean canBypassDisabled = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_DISABLED_PRIVATE.get(config));
-        boolean canUseChatColors = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()));
 
         Component sentComponents = null;
         Component receivedComponents;
 
         Player to = plugin.getServer().getPlayer(targetName);
+
+
+        // get chat message (formatted)
+        MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder();
+        if (from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+            messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
+            messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
+            messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.GRADIENT);
+            messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.RAINBOW);
+        }
+        String formattingPermission = SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_FORMATTING.get(plugin.getSpaceChatConfig().getAdapter());
+        for (me.mattstudios.msg.base.internal.Format f : me.mattstudios.msg.base.internal.Format.ALL) {
+            if (from.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
+                messageOptionsBuilder.addFormat(f);
+            }
+        }
+
+        Component messageComponents = AdventureMessage.create(messageOptionsBuilder.build()).parse(message);
+        String formattedMessage = LegacyComponentSerializer.legacySection().serialize(messageComponents);
+        if (formattedMessage.startsWith(ChatColor.WHITE.toString()) && !message.startsWith("&f")) {
+            formattedMessage = formattedMessage.substring(2);
+        }
 
         // if null, return
         if (format == null) {
@@ -384,7 +401,7 @@ public class ChatManager implements Manager {
                             "%receiverdisplayname%",  to != null ? to.getDisplayName() : targetName,
                             "%sendername%", from.getName(),
                             "%senderdisplayname%", from.getDisplayName(),
-                            "%message%", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
+                            "%message%", formattedMessage
                     );
             receivedComponents = Messages.getInstance(plugin).pmReceived
                     .compile(
@@ -393,7 +410,7 @@ public class ChatManager implements Manager {
                             "%receiverdisplayname%",  to != null ? to.getDisplayName() : targetName,
                             "%sendername%", from.getName(),
                             "%senderdisplayname%", from.getDisplayName(),
-                            "%message%", canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message
+                            "%message%", formattedMessage
                     );
         } else { // if not null
             Map<String, Component> generalReplacements = ImmutableMap.of(
@@ -401,7 +418,7 @@ public class ChatManager implements Manager {
                     "%receiverdisplayname%", LegacyComponentSerializer.legacySection().deserialize(to != null ? to.getDisplayName() : targetName),
                     "%sendername%", Component.text(from.getName()),
                     "%senderdisplayname%", LegacyComponentSerializer.legacySection().deserialize(from.getDisplayName()),
-                    "%message%", canUseChatColors ? LegacyComponentSerializer.legacyAmpersand().deserialize(message) : Component.text(message)
+                    "%message%", messageComponents
             );
             // get baseComponents from live builder
             if (SpaceChatConfigKeys.USE_RELATIONAL_PLACEHOLDERS.get(plugin.getSpaceChatConfig().getAdapter()) && !plugin.getServerSyncServiceManager().isUsingNetwork()) {
@@ -452,7 +469,7 @@ public class ChatManager implements Manager {
             });
         } else {
             // send via redis (it won't do anything if redis isn't enabled, so we can be sure that we aren't using dead methods that will throw an exception)
-            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), from.getDisplayName(), targetName, canUseChatColors ? ChatColor.translateAlternateColorCodes('&', message) : message, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents, canBypassIgnore, canBypassDisabled));
+            serverStreamSyncService.publishPrivateChat(new RedisPrivateChatPacket(from.getUniqueId(), from.getName(), from.getDisplayName(), targetName, formattedMessage, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), receivedComponents, canBypassIgnore, canBypassDisabled));
         }
 
         // log to console
