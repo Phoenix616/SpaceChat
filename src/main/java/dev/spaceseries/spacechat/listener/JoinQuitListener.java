@@ -31,19 +31,17 @@ public class JoinQuitListener implements Listener {
         plugin.getServerSyncServiceManager().getDataService().removePlayer(event.getPlayer().getName());
     }
 
-    @EventHandler
-    public void onPlayerJoin(AsyncPlayerPreLoginEvent event) {
-        // handle with user manager
-        plugin.getUserManager().use(event.getUniqueId(), (user) -> {
-            // if username not equal, update
-            if (!event.getName().equals(user.getUsername())) {
-                plugin.getUserManager().update(new User(plugin, user.getUuid(), event.getName(), user.getDate(), user.getSubscribedChannels(), user.getLastMessaged(), user.getIgnored(), user.getDisabledChats()));
-            }
-        });
-    }
-
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlayerPostJoin(PlayerJoinEvent event) {
+        // handle with user manager
+        String playerName = event.getPlayer().getName(); // cache to not keep event/player reference around
+        plugin.getUserManager().use(event.getPlayer().getUniqueId(), (user) -> {
+            // if username not equal, update
+            if (!playerName.equals(user.getUsername())) {
+                plugin.getUserManager().update(new User(plugin, user.getUuid(), playerName, user.getDate(), user.getSubscribedChannels(), user.getLastMessaged(), user.getIgnored(), user.getDisabledChats()));
+            }
+        });
+
         // add to online list
         plugin.getServerSyncServiceManager().getDataService().addPlayer(event.getPlayer().getName());
     }
