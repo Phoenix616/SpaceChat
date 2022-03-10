@@ -371,7 +371,7 @@ public class ChatManager implements Manager {
 
 
         // get chat message (formatted)
-        MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder();
+        MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder(me.mattstudios.msg.base.internal.Format.NONE);
         if (from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
             messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
             messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);

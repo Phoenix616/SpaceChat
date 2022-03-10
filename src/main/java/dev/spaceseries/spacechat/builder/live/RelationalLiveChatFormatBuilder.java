@@ -22,8 +22,6 @@ import org.bukkit.entity.Player;
 
 import java.util.Locale;
 
-import static dev.spaceseries.spacechat.config.SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS;
-
 public class RelationalLiveChatFormatBuilder extends LiveChatFormatBuilder implements Builder<Quad<Player, Player, String, Format>, TextComponent> {
 
     /**
@@ -69,7 +67,7 @@ public class RelationalLiveChatFormatBuilder extends LiveChatFormatBuilder imple
                 mmWithPlaceholdersReplaced = SECTION_REPLACER.apply(PlaceholderAPI.setRelationalPlaceholders(player, player2, mmWithPlaceholdersReplaced), player);
 
                 // get chat message (formatted)
-                MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder();
+                MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder(me.mattstudios.msg.base.internal.Format.NONE);
                 if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
                     messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
                     messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
@@ -112,13 +110,36 @@ public class RelationalLiveChatFormatBuilder extends LiveChatFormatBuilder imple
             // set relational placeholders
             text = SECTION_REPLACER.apply(PlaceholderAPI.setRelationalPlaceholders(player, player2, text), player);
 
-
             // build text from legacy (and replace <chat_message> with the actual message)
             // and check permissions for chat colors
-            Component parsedText = player.hasPermission(PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter())) ? LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    text.replace("<chat_message>", messageString)) :
-                    LegacyComponentSerializer.legacyAmpersand().deserialize(text).replaceText((b) -> b.match("<chat_message>")
-                            .replacement(messageString));
+            Component parsedText;
+
+            // get chat message (formatted)
+            MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder(me.mattstudios.msg.base.internal.Format.NONE);
+            if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.GRADIENT);
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.RAINBOW);
+            }
+            String formattingPermission = SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_FORMATTING.get(plugin.getSpaceChatConfig().getAdapter());
+            for (me.mattstudios.msg.base.internal.Format f : me.mattstudios.msg.base.internal.Format.ALL) {
+                if (player.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
+                    messageOptionsBuilder.addFormat(f);
+                }
+            }
+
+            // need to convert back to legacy in order to handle links als mf-msg can't do that
+            String chatMessage = LegacyComponentSerializer.legacySection().serialize(AdventureMessage.create(messageOptionsBuilder.build()).parse(messageString));
+            if (chatMessage.startsWith(ChatColor.WHITE.toString()) && !messageString.startsWith("&f")) {
+                chatMessage = chatMessage.substring(2);
+            }
+
+            Component messageComponent = computeChatMessageComponentSerializer(player)
+                    .deserialize(chatMessage);
+
+            parsedText = LegacyComponentSerializer.legacyAmpersand().deserialize(text)
+                    .replaceText((b) -> b.matchLiteral("<chat_message>").replacement(messageComponent));
 
             // parse message
             parsedText = new MessageParser(plugin).parse(player, parsedText);
@@ -150,5 +171,26 @@ public class RelationalLiveChatFormatBuilder extends LiveChatFormatBuilder imple
 
         // return built component builder
         return componentBuilder.build();
+    }
+
+    /**
+     * Computes the legacy component serializer based on player context for chat messages
+     *
+     * @param player player
+     * @return legacy component serializer
+     */
+    private LegacyComponentSerializer computeChatMessageComponentSerializer(Player player) {
+        LegacyComponentSerializer.Builder legacyComponentSerializerBuilder = LegacyComponentSerializer.builder();
+
+        if (player != null && player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+            legacyComponentSerializerBuilder = legacyComponentSerializerBuilder.hexColors();
+            legacyComponentSerializerBuilder = legacyComponentSerializerBuilder.character('&');
+        }
+
+        if (player != null && player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_LINKS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+            legacyComponentSerializerBuilder = legacyComponentSerializerBuilder.extractUrls();
+        }
+
+        return legacyComponentSerializerBuilder.build();
     }
 }

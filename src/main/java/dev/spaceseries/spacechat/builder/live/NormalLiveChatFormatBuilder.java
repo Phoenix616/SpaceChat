@@ -64,7 +64,7 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
                 String mmWithPlaceholdersReplaced = SECTION_REPLACER.apply(PlaceholderAPI.setPlaceholders(player, AMPERSAND_REPLACER.apply(formatPart.getLine(), player)), player);
 
                 // get chat message (formatted)
-                MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder();
+                MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder(me.mattstudios.msg.base.internal.Format.NONE);
                 if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
                     messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
                     messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
@@ -109,8 +109,29 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
             // and check permissions for chat colors
             Component parsedText;
 
+            // get chat message (formatted)
+            MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder(me.mattstudios.msg.base.internal.Format.NONE);
+            if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.GRADIENT);
+                messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.RAINBOW);
+            }
+            String formattingPermission = SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_FORMATTING.get(plugin.getSpaceChatConfig().getAdapter());
+            for (me.mattstudios.msg.base.internal.Format f : me.mattstudios.msg.base.internal.Format.ALL) {
+                if (player.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
+                    messageOptionsBuilder.addFormat(f);
+                }
+            }
+
+            // need to convert back to legacy in order to handle links als mf-msg can't do that
+            String chatMessage = LegacyComponentSerializer.legacySection().serialize(AdventureMessage.create(messageOptionsBuilder.build()).parse(messageString));
+            if (chatMessage.startsWith(ChatColor.WHITE.toString()) && !messageString.startsWith("&f")) {
+                chatMessage = chatMessage.substring(2);
+            }
+
             Component messageComponent = computeChatMessageComponentSerializer(player)
-                    .deserialize(messageString);
+                    .deserialize(chatMessage);
 
             parsedText = LegacyComponentSerializer.legacyAmpersand().deserialize(text)
                     .replaceText((b) -> b.matchLiteral("<chat_message>").replacement(messageComponent));
