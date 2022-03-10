@@ -61,6 +61,9 @@ public class ServerSyncServiceManager {
 
         // call the initialization method for the services
         streamService.start();
+
+        // remove all players cached in the server list that aren't online
+        dataService.removeAllServerPlayers();
     }
 
     /**
@@ -110,6 +113,8 @@ public class ServerSyncServiceManager {
      */
     public void end() {
         this.streamService.end();
+
+        this.dataService.removeAllServerPlayers();
 
         if (this.redisProvider != null) {
             this.redisProvider.end();

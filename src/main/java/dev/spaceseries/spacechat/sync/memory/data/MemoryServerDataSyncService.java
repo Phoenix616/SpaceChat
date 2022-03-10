@@ -141,6 +141,11 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
     }
 
     @Override
+    public void removeAllServerPlayers() {
+        // no need to manually remove
+    }
+
+    @Override
     public String getPlayerServer(String username) {
         // the player will always be on the current server if they are online
         return plugin.getServer().getPlayer(username) != null ? "local" : null;

@@ -194,6 +194,15 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
     }
 
     @Override
+    public void removeAllServerPlayers() {
+        for (String username : getPlayers()) {
+            if (plugin.getServer().getPlayerExact(username) == null) {
+                removePlayer(username);
+            }
+        }
+    }
+
+    @Override
     public String getPlayerServer(String username) {
         try (Jedis jedis = pool.getResource()) {
             return jedis.get(REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())

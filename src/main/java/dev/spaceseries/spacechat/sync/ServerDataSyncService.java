@@ -84,6 +84,11 @@ public abstract class ServerDataSyncService extends ServerSyncService {
     public abstract void removePlayer(String username);
 
     /**
+     * Remove all players from the online list of the current server that are offline
+     */
+    public abstract void removeAllServerPlayers();
+
+    /**
      * Get the server that a player is online at or null if they aren't online
      *
      * @return the server or null
