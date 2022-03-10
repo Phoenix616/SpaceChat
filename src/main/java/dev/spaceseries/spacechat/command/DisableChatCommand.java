@@ -8,7 +8,6 @@ import dev.spaceseries.spacechat.api.command.SpaceChatCommand;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 @CommandPermission("space.chat.command.disablechat")
@@ -26,7 +25,7 @@ public class DisableChatCommand extends SpaceChatCommand {
             if (chatType != null) {
                 ChatType type = ChatType.parse(chatType);
                 if (type != null) {
-                    user.getDisabledChats().add(type);
+                    user.disableChats(type);
                     Messages.getInstance(plugin).disabledSpecificChat.message(player, "%type%", type.name().toLowerCase().replace('_', ' '));
                 } else {
                     Messages.getInstance(plugin).invalidChatType.message(player, "%type%", chatType, "%types%", Arrays.stream(ChatType.values())
@@ -35,7 +34,7 @@ public class DisableChatCommand extends SpaceChatCommand {
                             .collect(Collectors.joining(", ")));
                 }
             } else {
-                Collections.addAll(user.getDisabledChats(), ChatType.values());
+                user.disableChats(ChatType.values());
                 Messages.getInstance(plugin).disabledAllChat.message(player);
             }
         });

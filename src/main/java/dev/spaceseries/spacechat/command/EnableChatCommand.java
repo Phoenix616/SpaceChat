@@ -25,7 +25,7 @@ public class EnableChatCommand extends SpaceChatCommand {
             if (chatType != null) {
                 ChatType type = ChatType.parse(chatType);
                 if (type != null) {
-                    user.getDisabledChats().remove(type);
+                    user.enableChats(type);
                     Messages.getInstance(plugin).enabledSpecificChat.message(player, "%type%", type.name().toLowerCase().replace('_', ' '));
                 } else {
                     Messages.getInstance(plugin).invalidChatType.message(player, "%type%", chatType, "%types%", Arrays.stream(ChatType.values())
@@ -34,7 +34,7 @@ public class EnableChatCommand extends SpaceChatCommand {
                             .collect(Collectors.joining(", ")));
                 }
             } else {
-                user.getDisabledChats().clear();
+                user.enableChats(ChatType.values());
                 Messages.getInstance(plugin).enabledAllChat.message(player);
             }
         });

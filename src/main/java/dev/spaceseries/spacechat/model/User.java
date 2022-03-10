@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
@@ -189,7 +190,11 @@ public final class User {
                 .anyMatch(c -> c.getHandle().equals(channel.getHandle()))) {
             return;
         }
+        
         this.subscribedChannels.add(channel);
+
+        // update in storage
+        plugin.getUserManager().update(this);
     }
 
     /**
@@ -203,6 +208,9 @@ public final class User {
 
         // remove from subscribed channels list (in this obj)
         this.subscribedChannels.removeIf(c -> channel.getHandle().equals(c.getHandle()));
+
+        // update in storage
+        plugin.getUserManager().update(this);
     }
 
     /**
@@ -221,6 +229,9 @@ public final class User {
      */
     public void setLastMessaged(String playerName) {
         this.lastMessaged = playerName;
+
+        // update in storage
+        plugin.getUserManager().update(this);
     }
 
     /**
@@ -240,6 +251,30 @@ public final class User {
      */
     public Set<ChatType> getDisabledChats() {
         return disabledChats;
+    }
+
+    /**
+     * Add disabled chats
+     *
+     * @param chatTypes The disabled chat types
+     */
+    public void disableChats(ChatType... chatTypes) {
+        Collections.addAll(this.disabledChats, chatTypes);
+
+        // update in storage
+        plugin.getUserManager().update(this);
+    }
+
+    /**
+     * Remove disabled chats
+     *
+     * @param chatTypes The enabled chat types
+     */
+    public void enableChats(ChatType... chatTypes) {
+        List.of(chatTypes).forEach(this.disabledChats::remove);
+
+        // update in storage
+        plugin.getUserManager().update(this);
     }
 
     /**
@@ -278,7 +313,12 @@ public final class User {
      * @return <tt>true</tt> if the player was successfully ignored; <tt>false</tt> if they were already ignored
      */
     public boolean ignorePlayer(User user) {
-        return this.ignored.put(user.getUuid(), user.getUsername().toLowerCase(Locale.ROOT)) == null;
+        if (this.ignored.put(user.getUuid(), user.getUsername().toLowerCase(Locale.ROOT)) == null) {
+            // update in storage
+            plugin.getUserManager().update(this);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -288,6 +328,10 @@ public final class User {
      * @return <tt>true</tt> if the player was successfully unignored; <tt>false</tt> if they were not ignored before
      */
     public boolean unignorePlayer(User user) {
-        return this.ignored.remove(user.getUuid()) != null;
+        if (this.ignored.remove(user.getUuid()) != null) {
+            plugin.getUserManager().update(this);
+            return true;
+        }
+        return false;
     }
 }
