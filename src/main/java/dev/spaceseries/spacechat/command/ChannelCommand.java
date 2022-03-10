@@ -6,6 +6,7 @@ import dev.spaceseries.spacechat.Messages;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.api.command.SpaceChatCommand;
 import dev.spaceseries.spacechat.model.Channel;
+import dev.spaceseries.spacechat.model.ChatType;
 import org.bukkit.entity.Player;
 
 @CommandPermission("space.chat.command.channel")
@@ -155,6 +156,55 @@ public class ChannelCommand extends SpaceChatCommand {
 
                 // send message
                 Messages.getInstance(plugin).channelJoin.message(player, "%channel%", channel);
+            });
+        }
+
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send help message
+            Messages.getInstance(plugin).channelHelp.message(player);
+        }
+    }
+
+    @Subcommand("message|msg|talk")
+    @CommandAlias("channel")
+    @CommandPermission("space.chat.command.channel.talk")
+    public class MessageCommand extends BaseCommand {
+
+        @Default
+        public void onMessage(Player player, @Single String channel, String message) {
+            // get channel
+            Channel applicable = plugin.getChannelManager().get(channel, null);
+            if (applicable == null) {
+                // send message
+                Messages.getInstance(plugin).channelInvalid.message(player, "%channel%", channel);
+                return;
+            }
+
+            // do they have permission?
+            if (!player.hasPermission(applicable.getPermission())) {
+                Messages.getInstance(plugin).channelAccessDenied.message(player);
+                return;
+            }
+
+            // set current channel
+            plugin.getUserManager().use(player.getUniqueId(), (user) -> {
+                if (!user.hasChatEnabled(ChatType.PUBLIC)) {
+                    Messages.getInstance(plugin).chatDisabled.message(player);
+                    return;
+                }
+
+                if (!user.getSubscribedChannels().contains(applicable)) {
+                    user.subscribeToChannel(applicable);
+
+                    // send message
+                    Messages.getInstance(plugin).channelListen.message(player, "%channel%", channel);
+                }
+
+                // send message to channel
+                plugin.getChannelManager().send(player, null, message, applicable);
             });
         }
 

@@ -7,6 +7,7 @@ import dev.spaceseries.spacechat.model.Channel;
 import dev.spaceseries.spacechat.model.manager.MapManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Locale;
 
@@ -44,13 +45,11 @@ public class ChannelManager extends MapManager<String, Channel> {
     /**
      * Sends a chat message using the applicable format
      *
+     * @param player  The player
      * @param event   The event
      * @param message The message
      */
-    public void send(AsyncPlayerChatEvent event, String message, Channel channel) {
-        // get player
-        Player player = event.getPlayer();
-
+    public void send(Player player, @Nullable AsyncPlayerChatEvent event, String message, Channel channel) {
         // if no permission, unsubscribe them
         if (!player.hasPermission(channel.getPermission())) {
             plugin.getServerSyncServiceManager().getDataService().unsubscribeFromChannel(player.getUniqueId(), channel);

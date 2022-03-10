@@ -34,6 +34,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -204,7 +205,7 @@ public class ChatManager implements Manager {
      * @param format  format
      * @param event   event
      */
-    public void sendChatMessage(Player from, String message, Format format, AsyncPlayerChatEvent event) {
+    public void sendChatMessage(Player from, String message, Format format, @Nullable AsyncPlayerChatEvent event) {
         boolean canBypassIgnore = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_IGNORE.get(config));
         boolean canBypassDisabled = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_DISABLED_PUBLIC.get(config));
 

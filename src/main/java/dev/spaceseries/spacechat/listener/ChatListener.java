@@ -43,7 +43,7 @@ public class ChatListener implements Listener {
 
         // if not null, send through channel manager
         if (current != null && event.getPlayer().hasPermission(current.getPermission())) {
-            plugin.getChannelManager().send(event, event.getMessage(), current);
+            plugin.getChannelManager().send(event.getPlayer(), event, event.getMessage(), current);
             return;
         }
 
