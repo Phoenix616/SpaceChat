@@ -195,9 +195,12 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
 
     @Override
     public void removeAllServerPlayers() {
-        for (String username : getPlayers()) {
-            if (plugin.getServer().getPlayerExact(username) == null) {
-                removePlayer(username);
+        Collection<String> players = getPlayers();
+        if (players != null) {
+            for (String username : players) {
+                if (plugin.getServer().getPlayerExact(username) == null) {
+                    removePlayer(username);
+                }
             }
         }
     }
@@ -208,6 +211,7 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
             return jedis.get(REDIS_ONLINE_PLAYERS_SERVER_KEY.get(plugin.getSpaceChatConfig().getAdapter())
                     .replace("%username%", username.toLowerCase(Locale.ROOT)));
         } catch (Exception e) {
+            plugin.getLogger().warning("Unable to get player server for " + username + ". " + e.getClass().getSimpleName() + " " + e.getMessage());
             return null;
         }
     }
@@ -217,6 +221,7 @@ public class RedisServerDataSyncService extends ServerDataSyncService {
         try (Jedis jedis = pool.getResource()) {
             return jedis.lrange(REDIS_ONLINE_PLAYERS_KEY.get(plugin.getSpaceChatConfig().getAdapter()), 0, -1);
         } catch (Exception e) {
+            plugin.getLogger().warning("Unable to get players. " + e.getClass().getSimpleName() + " " + e.getMessage());
             return null;
         }
     }

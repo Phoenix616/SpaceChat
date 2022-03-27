@@ -112,9 +112,9 @@ public class ServerSyncServiceManager {
      * Mostly for connections to databases or messaging agents
      */
     public void end() {
-        this.streamService.end();
-
         this.dataService.removeAllServerPlayers();
+
+        this.streamService.end();
 
         if (this.redisProvider != null) {
             this.redisProvider.end();
