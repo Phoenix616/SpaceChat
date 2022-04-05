@@ -65,7 +65,7 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
 
                 // get chat message (formatted)
                 MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder(me.mattstudios.msg.base.internal.Format.NONE);
-                if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+                if (player != null && player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
                     messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
                     messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
                     messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.GRADIENT);
@@ -73,7 +73,7 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
                 }
                 String formattingPermission = SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_FORMATTING.get(plugin.getSpaceChatConfig().getAdapter());
                 for (me.mattstudios.msg.base.internal.Format f : me.mattstudios.msg.base.internal.Format.ALL) {
-                    if (player.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
+                    if (player != null && player.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
                         messageOptionsBuilder.addFormat(f);
                     }
                 }
@@ -111,7 +111,7 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
 
             // get chat message (formatted)
             MessageOptions.Builder messageOptionsBuilder = MessageOptions.builder(me.mattstudios.msg.base.internal.Format.NONE);
-            if (player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
+            if (player != null && player.hasPermission(SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_COLORS.get(plugin.getSpaceChatConfig().getAdapter()))) {
                 messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.COLOR);
                 messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.HEX);
                 messageOptionsBuilder.addFormat(me.mattstudios.msg.base.internal.Format.GRADIENT);
@@ -119,7 +119,7 @@ public class NormalLiveChatFormatBuilder extends LiveChatFormatBuilder implement
             }
             String formattingPermission = SpaceChatConfigKeys.PERMISSIONS_USE_CHAT_FORMATTING.get(plugin.getSpaceChatConfig().getAdapter());
             for (me.mattstudios.msg.base.internal.Format f : me.mattstudios.msg.base.internal.Format.ALL) {
-                if (player.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
+                if (player != null && player.hasPermission(formattingPermission + f.name().toLowerCase(Locale.ROOT))) {
                     messageOptionsBuilder.addFormat(f);
                 }
             }
