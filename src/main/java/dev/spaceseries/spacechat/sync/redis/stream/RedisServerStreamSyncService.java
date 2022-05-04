@@ -174,7 +174,7 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
                 replacements.put("%senderdisplayname%", LegacyComponentSerializer.legacySection().deserialize(chatPacket.getSenderDisplayName()));
                 replacements.put("%message%", LegacyComponentSerializer.legacySection().deserialize(chatPacket.getMessage()));
                 Component sentComponents = Messages.getInstance(plugin).pmSent.compile(replacements);
-                publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderName(), chatPacket.getSenderDisplayName(), "", SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), sentComponents, true, true));
+                publishPrivateChat(new RedisPrivateChatPacket(Identity.nil().uuid(), "", chatPacket.getSenderDisplayName(), chatPacket.getSenderName(), "", SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(plugin.getSpaceChatConfig().getAdapter()), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(plugin.getSpaceChatConfig().getAdapter()), sentComponents, true, true));
 
                 plugin.getUserManager().use(to.getUniqueId(), user -> {
                     if (!user.hasChatEnabled(ChatType.PRIVATE) && !chatPacket.canBypassDisabled()) {
