@@ -206,11 +206,24 @@ public class ChatManager implements Manager {
      * @param event   event
      */
     public void sendChatMessage(Player from, String message, Format format, @Nullable AsyncPlayerChatEvent event) {
-        boolean canBypassIgnore = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_IGNORE.get(config));
-        boolean canBypassDisabled = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_DISABLED_PUBLIC.get(config));
-
         // get player's current channel, and send through that (if null, that means 'global')
         Channel applicableChannel = serverDataSyncService.getCurrentChannel(from.getUniqueId());
+
+        sendChatMessage(from, message, applicableChannel, format, event);
+    }
+
+    /**
+     * Send a chat message
+     *
+     * @param from    player that the message is from
+     * @param message message the message to send
+     * @param channel the channel to send to, if null then it's global
+     * @param format  format the format to use, can be null
+     * @param event   optionally the chat event
+     */
+    public void sendChatMessage(Player from, String message, @Nullable Channel channel, @Nullable Format format, @Nullable AsyncPlayerChatEvent event) {
+        boolean canBypassIgnore = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_IGNORE.get(config));
+        boolean canBypassDisabled = from.hasPermission(SpaceChatConfigKeys.PERMISSIONS_BYPASS_DISABLED_PUBLIC.get(config));
 
         Component components;
 
@@ -229,8 +242,8 @@ public class ChatManager implements Manager {
         }
 
         // if channel exists, then send through it
-        if (applicableChannel != null) {
-            sendComponentChannelMessage(from.getUniqueId(), components, applicableChannel, canBypassIgnore, canBypassDisabled);
+        if (channel != null) {
+            sendComponentChannelMessage(from.getUniqueId(), components, channel, canBypassIgnore, canBypassDisabled);
         } else {
             // send component message to entire server
             sendComponentChatMessage(from.getUniqueId(), components, canBypassIgnore, canBypassDisabled);
@@ -244,7 +257,7 @@ public class ChatManager implements Manager {
                 );
 
         // send via redis (it won't do anything if redis isn't enabled, so we can be sure that we aren't using dead methods that will throw an exception)
-        serverStreamSyncService.publishChat(new RedisChatPacket(from.getUniqueId(), from.getName(), applicableChannel, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), components, canBypassIgnore, canBypassDisabled));
+        serverStreamSyncService.publishChat(new RedisChatPacket(from.getUniqueId(), from.getName(), channel, SpaceChatConfigKeys.REDIS_SERVER_IDENTIFIER.get(config), SpaceChatConfigKeys.REDIS_SERVER_DISPLAYNAME.get(config), components, canBypassIgnore, canBypassDisabled));
 
         // log to console
         if (event != null) { // if there's an event, log w/ the event

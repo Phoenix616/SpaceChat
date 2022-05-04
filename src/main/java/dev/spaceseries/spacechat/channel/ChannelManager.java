@@ -57,6 +57,6 @@ public class ChannelManager extends MapManager<String, Channel> {
         }
 
         // send chat message
-        plugin.getChatManager().sendChatMessage(player, message, channel.getFormat(), event);
+        plugin.getChatManager().sendChatMessage(player, message, channel, channel.getFormat(), event);
     }
 }
