@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class MemoryServerDataSyncService extends ServerDataSyncService {
@@ -89,8 +90,8 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
      * @return channels
      */
     @Override
-    public List<Channel> getSubscribedChannels(UUID uuid) {
-        return this.playerSubscribedChannelManager.get(uuid, new ArrayList<>());
+    public CompletableFuture<List<Channel>> getSubscribedChannels(UUID uuid) {
+        return CompletableFuture.completedFuture(this.playerSubscribedChannelManager.get(uuid, new ArrayList<>()));
     }
 
     /**
@@ -100,14 +101,14 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
      * @return channel
      */
     @Override
-    public Channel getCurrentChannel(UUID uuid) {
+    public CompletableFuture<Channel> getCurrentChannel(UUID uuid) {
         // the reason I pull from the connection manager instead of just using the provided channel object
         // in memory is because it's possible that the channels won't line up if there is POSSIBLY a network connection
         // still going on AND the configurations are different between servers. It's VERY unlikely, but I still like to
         // account for every situation.
         Channel channel = this.playerCurrentChannelManager.get(uuid, null);
 
-        return channel == null ? null : plugin.getChannelManager().get(channel.getHandle(), null);
+        return channel == null ? null : CompletableFuture.completedFuture(plugin.getChannelManager().get(channel.getHandle(), null));
     }
 
     /**
@@ -119,15 +120,15 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
      * @return uuids
      */
     @Override
-    public List<UUID> getSubscribedUUIDs(Channel channel) {
-        return this.playerSubscribedChannelManager.getAll()
+    public CompletableFuture<List<UUID>> getSubscribedUUIDs(Channel channel) {
+        return CompletableFuture.completedFuture(this.playerSubscribedChannelManager.getAll()
                 .entrySet()
                 .stream()
                 .filter((e -> e.getValue()
                         .stream()
                         .anyMatch(c -> c.getHandle().equals(channel.getHandle()))))
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -146,9 +147,9 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
     }
 
     @Override
-    public String getPlayerServer(String username) {
+    public CompletableFuture<String> getPlayerServer(String username) {
         // the player will always be on the current server if they are online
-        return plugin.getServer().getPlayer(username) != null ? "local" : null;
+        return CompletableFuture.completedFuture(plugin.getServer().getPlayer(username) != null ? "local" : null);
     }
 
     @Override

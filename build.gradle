@@ -6,7 +6,7 @@ plugins {
 }
 
 // naming
-version = '2.4.0-SNAPSHOT'
+version = '2.5.0-SNAPSHOT'
 group = 'dev.spaceseries'
 def packageGroup = group + '.spacechat'
 
@@ -64,8 +64,8 @@ dependencies {
     // acf
     implementation "co.aikar:acf-bukkit:0.5.0-SNAPSHOT"
 
-    // jedis
-    implementation 'redis.clients:jedis:3.7.0'
+    // lettuce redis library
+    implementation 'io.lettuce:lettuce-core:6.1.8.RELEASE'
 
     // google
     compileOnly 'com.google.code.gson:gson:2.8.0'
@@ -105,7 +105,10 @@ shadowJar {
     relocate 'de.themoep.minedown.adventure', "${packageGroup}.lib.minedown"
     relocate "co.aikar.commands", "${packageGroup}.lib.aikar.commands"
     relocate "co.aikar.locales", "${packageGroup}.lib.aikar.locales"
-    relocate "redis.clients.jedis", "${packageGroup}.lib.jedis"
+    relocate "io.lettuce", "${packageGroup}.lib.lettuce"
+    relocate "io.netty", "${packageGroup}.lib.netty"
+    relocate "reactor", "${packageGroup}.lib.reactor"
+    relocate "org.reactivestreams", "${packageGroup}.lib.reactivestreams"
     relocate "com.zaxxer.hikari", "${packageGroup}.lib.hikari"
     relocate "org.spongepowered.configurate", "${packageGroup}.lib.configurate"
     relocate "io.leangen.geantyref", "${packageGroup}.lib.geantyref"

@@ -1,6 +1,5 @@
 package dev.spaceseries.spacechat.sync.redis.stream;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.spaceseries.spacechat.Messages;

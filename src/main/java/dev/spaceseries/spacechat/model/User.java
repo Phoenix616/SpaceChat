@@ -91,19 +91,19 @@ public final class User {
         // on initialization, subscribe to stored subscribed list (parameter in constructor)
         // aka get from storage and also save to storage when a player calls one of the below methods about channel
         // management.
-        List<Channel> serverSideSubscribedList = plugin.getServerSyncServiceManager().getDataService().getSubscribedChannels(uuid);
+        plugin.getServerSyncServiceManager().getDataService().getSubscribedChannels(uuid).thenAccept(serverSideSubscribedList -> {
+            List<Channel> toUnsubscribe = serverSideSubscribedList.stream()
+                    .filter(element -> !subscribedChannels.contains(element))
+                    .collect(Collectors.toList());
 
-        List<Channel> toUnsubscribe = serverSideSubscribedList.stream()
-                .filter(element -> !subscribedChannels.contains(element))
-                .collect(Collectors.toList());
+            toUnsubscribe.forEach(u -> plugin.getServerSyncServiceManager().getDataService().unsubscribeFromChannel(uuid, u));
 
-        toUnsubscribe.forEach(u -> plugin.getServerSyncServiceManager().getDataService().unsubscribeFromChannel(uuid, u));
+            List<Channel> toSubscribe = subscribedChannels.stream()
+                    .filter(element -> !serverSideSubscribedList.contains(element))
+                    .collect(Collectors.toList());
 
-        List<Channel> toSubscribe = subscribedChannels.stream()
-                .filter(element -> !serverSideSubscribedList.contains(element))
-                .collect(Collectors.toList());
-
-        toSubscribe.forEach(u -> plugin.getServerSyncServiceManager().getDataService().subscribeToChannel(uuid, u));
+            toSubscribe.forEach(u -> plugin.getServerSyncServiceManager().getDataService().subscribeToChannel(uuid, u));
+        });
     }
 
     /**

@@ -4,18 +4,16 @@ import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.sync.packet.StreamDataPacket;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.RedisPublishDataPacket;
 import dev.spaceseries.spacechat.sync.redis.stream.packet.RedisStringReceiveDataPacket;
-import org.bukkit.Bukkit;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPubSub;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.pubsub.RedisPubSubListener;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 import static dev.spaceseries.spacechat.config.SpaceChatConfigKeys.*;
 
-public class RedisMessenger extends JedisPubSub {
+public class RedisMessenger implements RedisPubSubListener<String, String> {
 
     /**
      * Sync service
@@ -23,9 +21,19 @@ public class RedisMessenger extends JedisPubSub {
     private final RedisServerStreamSyncService syncService;
 
     /**
-     * Pool
+     * Client
      */
-    private final JedisPool pool;
+    private final RedisClient client;
+
+    /**
+     * Subscription Connection
+     */
+    private final StatefulRedisPubSubConnection<String, String> subConnection;
+
+    /**
+     * Publish Connection
+     */
+    private StatefulRedisConnection<String, String> pubConnection;
 
     /**
      * Plugin
@@ -40,44 +48,54 @@ public class RedisMessenger extends JedisPubSub {
         this.syncService = syncService;
 
         // initialize pool
-        this.pool = syncService.getServiceManager().getRedisProvider().provide();
+        this.client = syncService.getServiceManager().getRedisProvider().provide();
 
-        // subscribing to redis pub/sub is a blocking operation.
-        // we need to make a new thread in order to not block the main thread....
-        new Thread(() -> {
-            // subscribe this class to chat channel
-            pool.getResource().subscribe(this, REDIS_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
-        }).start();
+        // create subscription connection
+        subConnection = client.connectPubSub();
 
-        // create a separate thread for private chat packets
-        new Thread(() -> {
-            // subscribe this class to chat channel
-            pool.getResource().subscribe(this, REDIS_PRIVATE_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
-        }).start();
+        // add us as listener
+        subConnection.addListener(this);
 
-        // create a separate thread for broadcast packets
-        new Thread(() -> {
-            // subscribe this class to chat channel
-            pool.getResource().subscribe(this, REDIS_BROADCAST_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()));
-        }).start();
+        // subscribe to redis pub/sub
+        subConnection.async().subscribe(
+                REDIS_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()),
+                REDIS_PRIVATE_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()),
+                REDIS_BROADCAST_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter())
+        );
+
+        // create publish connection
+        pubConnection = client.connect();
     }
 
     /**
      * Shuts down the client
      */
     public void shutdown() {
-        if (this.pool != null && this.pool.getResource().getClient() != null) {
+        if (pubConnection.isOpen()) {
             // unsubscribe from chat channel
-            unsubscribe(REDIS_CHAT_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter()));
-            unsubscribe(REDIS_PRIVATE_CHAT_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter()));
-            unsubscribe(REDIS_BROADCAST_CHANNEL.get(plugin.getSpaceChatConfig().getAdapter()));
-
-            pool.close();
+            subConnection.sync().unsubscribe(
+                    REDIS_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()),
+                    REDIS_PRIVATE_CHAT_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter()),
+                    REDIS_BROADCAST_CHANNEL.get(this.plugin.getSpaceChatConfig().getAdapter())
+            );
+            // remove listener
+            subConnection.removeListener(this);
+            // close connection
+            subConnection.close();
+        }
+        if (pubConnection.isOpen()) {
+            // close connection
+            pubConnection.close();
         }
     }
 
     @Override
-    public void onMessage(String channel, String message) {
+    public void message(String pattern, String channel, String message) {
+        message(channel, message);
+    }
+
+    @Override
+    public void message(String channel, String message) {
         // receiving
         // [channel] sent [message]
 
@@ -91,13 +109,23 @@ public class RedisMessenger extends JedisPubSub {
     }
 
     @Override
-    public void onSubscribe(String channel, int subscribedChannels) {
+    public void psubscribed(String pattern, long count) {
+        subscribed(pattern, count);
+    }
+
+    @Override
+    public void subscribed(String channel, long subscribedChannels) {
         // we have subscribed to [channel]. We are currently subscribed to [subscribedChannels] channels.
         plugin.getLogger().log(Level.INFO, "SpaceChat subscribed to the redis channel '" + channel + "'");
     }
 
     @Override
-    public void onUnsubscribe(String channel, int subscribedChannels) {
+    public void punsubscribed(String unsubscribed, long count) {
+        unsubscribed(unsubscribed, count);
+    }
+
+    @Override
+    public void unsubscribed(String channel, long subscribedChannels) {
         // we have unsubscribed from [channel]. We are currently subscribed to another [subscribedChannels] channels.
         plugin.getLogger().log(Level.INFO, "SpaceChat unsubscribed from the redis channel '" + channel + "'");
     }
@@ -113,10 +141,9 @@ public class RedisMessenger extends JedisPubSub {
         String channel = redisPublishDataPacket.getChannel();
         String message = redisPublishDataPacket.getMessage();
         // run async
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            try (Jedis jedis = pool.getResource()) {
-                jedis.publish(channel, message);
-            }
-        });
+        if (pubConnection == null || !pubConnection.isOpen()) {
+            pubConnection = client.connect();
+        }
+        pubConnection.async().publish(channel, message);
     }
 }

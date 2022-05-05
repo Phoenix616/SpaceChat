@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class ServerDataSyncService extends ServerSyncService {
 
@@ -49,7 +50,7 @@ public abstract class ServerDataSyncService extends ServerSyncService {
      * @param uuid uuid
      * @return channels
      */
-    public abstract List<Channel> getSubscribedChannels(UUID uuid);
+    public abstract CompletableFuture<List<Channel>> getSubscribedChannels(UUID uuid);
 
     /**
      * Gets the current channel that a player is talking in
@@ -57,7 +58,7 @@ public abstract class ServerDataSyncService extends ServerSyncService {
      * @param uuid uuid
      * @return channel
      */
-    public abstract Channel getCurrentChannel(UUID uuid);
+    public abstract CompletableFuture<Channel> getCurrentChannel(UUID uuid);
 
     /**
      * Gets a list of all of the uuids of players who are currently subscribed to a given channel
@@ -67,7 +68,7 @@ public abstract class ServerDataSyncService extends ServerSyncService {
      * @param channel channel
      * @return uuids
      */
-    public abstract List<UUID> getSubscribedUUIDs(Channel channel);
+    public abstract  CompletableFuture<List<UUID>> getSubscribedUUIDs(Channel channel);
 
     /**
      * Add a player to the online list of the current server
@@ -93,7 +94,7 @@ public abstract class ServerDataSyncService extends ServerSyncService {
      *
      * @return the server or null
      */
-    public abstract String getPlayerServer(String username);
+    public abstract CompletableFuture<String> getPlayerServer(String username);
 
     /**
      * Get all known players

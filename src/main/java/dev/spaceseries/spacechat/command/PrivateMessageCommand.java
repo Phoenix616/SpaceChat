@@ -24,20 +24,21 @@ public class PrivateMessageCommand extends SpaceChatCommand {
     @Default
     @CommandCompletion("@globalplayers")
     public void onCommand(Player player, @Single String targetName, String message) {
-        String targetServer = plugin.getServerSyncServiceManager().getDataService().getPlayerServer(targetName);
-        if (targetServer != null) {
-            plugin.getUserManager().use(player.getUniqueId(), user -> {
-                if (!user.hasChatEnabled(ChatType.PRIVATE)) {
-                    Messages.getInstance(plugin).pmChatDisabled.message(player);
-                } else if (!user.isIgnored(targetName)) {
-                    plugin.getPrivateFormatManager().send(player, targetName, message);
-                } else {
-                    Messages.getInstance(plugin).pmTargetIgnored.message(player, "%user%", targetName);
-                }
-            });
-        } else {
-            Messages.getInstance(plugin).pmPlayerNotFound.message(player, "%user%", targetName);
-        }
+        plugin.getServerSyncServiceManager().getDataService().getPlayerServer(targetName).thenAccept(targetServer -> {
+            if (targetServer != null) {
+                plugin.getUserManager().use(player.getUniqueId(), user -> {
+                    if (!user.hasChatEnabled(ChatType.PRIVATE)) {
+                        Messages.getInstance(plugin).pmChatDisabled.message(player);
+                    } else if (!user.isIgnored(targetName)) {
+                        plugin.getPrivateFormatManager().send(player, targetName, message);
+                    } else {
+                        Messages.getInstance(plugin).pmTargetIgnored.message(player, "%user%", targetName);
+                    }
+                });
+            } else {
+                Messages.getInstance(plugin).pmPlayerNotFound.message(player, "%user%", targetName);
+            }
+        });
     }
 
     @Default

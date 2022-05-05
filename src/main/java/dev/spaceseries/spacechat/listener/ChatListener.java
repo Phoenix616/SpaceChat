@@ -39,15 +39,15 @@ public class ChatListener implements Listener {
         }
 
         // get player's current channel
-        Channel current = plugin.getServerSyncServiceManager().getDataService().getCurrentChannel(event.getPlayer().getUniqueId());
+        plugin.getServerSyncServiceManager().getDataService().getCurrentChannel(event.getPlayer().getUniqueId()).thenAccept(current -> {
+            // if not null, send through channel manager
+            if (current != null && event.getPlayer().hasPermission(current.getPermission())) {
+                plugin.getChannelManager().send(event.getPlayer(), event, event.getMessage(), current);
+                return;
+            }
 
-        // if not null, send through channel manager
-        if (current != null && event.getPlayer().hasPermission(current.getPermission())) {
-            plugin.getChannelManager().send(event.getPlayer(), event, event.getMessage(), current);
-            return;
-        }
-
-        // get chat format manager, send chat packet (this method also sets the format in console)
-        plugin.getChatFormatManager().send(event, event.getMessage());
+            // get chat format manager, send chat packet (this method also sets the format in console)
+            plugin.getChatFormatManager().send(event, event.getMessage());
+        });
     }
 }

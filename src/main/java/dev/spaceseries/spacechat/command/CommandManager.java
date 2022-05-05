@@ -7,6 +7,7 @@ import dev.spaceseries.spacechat.model.ChatType;
 import org.bukkit.ChatColor;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class CommandManager extends BukkitCommandManager {

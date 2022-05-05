@@ -3,17 +3,17 @@ package dev.spaceseries.spacechat.sync.provider.redis;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.config.SpaceChatConfigKeys;
 import dev.spaceseries.spacechat.sync.provider.Provider;
-import redis.clients.jedis.JedisPool;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
-public class RedisProvider implements Provider<JedisPool> {
+public class RedisProvider implements Provider<RedisClient> {
 
     /**
      * Pool
      */
-    private JedisPool pool;
+    private RedisClient client;
 
     /**
      * Construct redis provider
@@ -21,22 +21,22 @@ public class RedisProvider implements Provider<JedisPool> {
     public RedisProvider(SpaceChatPlugin plugin) {
         try {
             // initialize pool
-            pool = new JedisPool(new URI(SpaceChatConfigKeys.REDIS_URL.get(plugin.getSpaceChatConfig().getAdapter())));
-        } catch (URISyntaxException e) {
+            client = RedisClient.create(SpaceChatConfigKeys.REDIS_URL.get(plugin.getSpaceChatConfig().getAdapter()));
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            pool = null;
+            client = null;
         }
     }
 
     @Override
-    public JedisPool provide() {
-        return pool;
+    public RedisClient provide() {
+        return client;
     }
 
     /**
      * Ends the provided pool
      */
     public void end() {
-        this.pool.close();
+        this.client.shutdown();
     }
 }

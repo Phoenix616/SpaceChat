@@ -164,37 +164,37 @@ public class ChatManager implements Manager {
      */
     public void sendComponentChannelMessage(UUID from, Component component, Channel channel, boolean canBypassIgnore, boolean canBypassDisabled) {
         // get all subscribed players to that channel
-        List<Player> subscribedPlayers = serverDataSyncService.getSubscribedUUIDs(channel)
-                .stream()
-                .filter(uuid -> {
-                    User user = plugin.getUserManager().get(uuid);
-                    return user == null || ((user.hasChatEnabled(ChatType.PUBLIC) || canBypassDisabled) && (!user.isIgnored(from) || canBypassIgnore));
-                })
-                .map(Bukkit::getPlayer)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        serverDataSyncService.getSubscribedUUIDs(channel).thenAccept(subscribedUUIDs -> {
+            List<Player> subscribedPlayers = subscribedUUIDs.stream()
+                    .filter(uuid -> {
+                        User user = plugin.getUserManager().get(uuid);
+                        return user == null || ((user.hasChatEnabled(ChatType.PUBLIC) || canBypassDisabled) && (!user.isIgnored(from) || canBypassIgnore));
+                    })
+                    .map(Bukkit::getPlayer)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
-        Player fromPlayer = plugin.getServer().getPlayer(from);
+            Player fromPlayer = plugin.getServer().getPlayer(from);
 
-        // even if not listening, add the sender to the list of players listening so that they can view the message
-        // that they sent themselves
-        if (fromPlayer != null && !subscribedPlayers.contains(fromPlayer)) {
-            subscribedPlayers.add(fromPlayer);
-        }
-
-        List<Player> subscribedPlayersWithPermission = subscribedPlayers.stream()
-                .filter(p -> p.hasPermission(channel.getPermission()))
-                .collect(Collectors.toList());
-
-        // if a player in the list doesn't have permission to view it, then unsubscribe them
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> subscribedPlayers.forEach(p -> {
-            if (!p.hasPermission(channel.getPermission())) {
-                serverDataSyncService.unsubscribeFromChannel(p.getUniqueId(), channel);
+            // even if not listening, add the sender to the list of players listening so that they can view the message
+            // that they sent themselves
+            if (fromPlayer != null && !subscribedPlayers.contains(fromPlayer)) {
+                subscribedPlayers.add(fromPlayer);
             }
-        }));
 
+            List<Player> subscribedPlayersWithPermission = subscribedPlayers.stream()
+                    .filter(p -> p.hasPermission(channel.getPermission()))
+                    .collect(Collectors.toList());
 
-        subscribedPlayersWithPermission.forEach(p -> sendComponentMessage(Identity.identity(from), component, p));
+            // if a player in the list doesn't have permission to view it, then unsubscribe them
+            subscribedPlayers.forEach(p -> {
+                if (!p.hasPermission(channel.getPermission())) {
+                    serverDataSyncService.unsubscribeFromChannel(p.getUniqueId(), channel);
+                }
+            });
+
+            subscribedPlayersWithPermission.forEach(p -> sendComponentMessage(Identity.identity(from), component, p));
+        });
     }
 
     /**
@@ -207,9 +207,8 @@ public class ChatManager implements Manager {
      */
     public void sendChatMessage(Player from, String message, Format format, @Nullable AsyncPlayerChatEvent event) {
         // get player's current channel, and send through that (if null, that means 'global')
-        Channel applicableChannel = serverDataSyncService.getCurrentChannel(from.getUniqueId());
-
-        sendChatMessage(from, message, applicableChannel, format, event);
+        serverDataSyncService.getCurrentChannel(from.getUniqueId()).thenAccept(applicableChannel ->
+                sendChatMessage(from, message, applicableChannel, format, event));
     }
 
     /**

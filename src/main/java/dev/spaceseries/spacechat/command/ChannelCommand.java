@@ -103,20 +103,20 @@ public class ChannelCommand extends SpaceChatCommand {
         @Default
         public void onLeave(Player player) {
             // get current
-            Channel current = plugin.getServerSyncServiceManager().getDataService().getCurrentChannel(player.getUniqueId());
+            plugin.getServerSyncServiceManager().getDataService().getCurrentChannel(player.getUniqueId()).thenAccept(current -> {
+                // if current null
+                if (current == null) {
+                    Messages.getInstance(plugin).generalHelp.message(player);
+                    return;
+                }
 
-            // if current null
-            if (current == null) {
-                Messages.getInstance(plugin).generalHelp.message(player);
-                return;
-            }
+                // update current channel (aka remove)
+                plugin.getUserManager().use(player.getUniqueId(), (user) -> {
+                    user.leaveChannel(current);
 
-            // update current channel (aka remove)
-            plugin.getUserManager().use(player.getUniqueId(), (user) -> {
-                user.leaveChannel(current);
-
-                // send message
-                Messages.getInstance(plugin).channelLeave.message(player, "%channel%", current.getHandle());
+                    // send message
+                    Messages.getInstance(plugin).channelLeave.message(player, "%channel%", current.getHandle());
+                });
             });
         }
 
