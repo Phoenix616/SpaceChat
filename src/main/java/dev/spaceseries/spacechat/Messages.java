@@ -89,6 +89,10 @@ public class Messages {
     // channel help
     public Message channelHelp;
 
+    // list channels
+    public Message channelList;
+    public Message channelListEntry;
+
     // join
     public Message channelJoin;
 
@@ -100,8 +104,8 @@ public class Messages {
 
     // mute
     public Message channelMute;
-    // invalid
 
+    // invalid
     public Message channelInvalid;
 
     // access denied
@@ -186,6 +190,8 @@ public class Messages {
         placeholderChatEnabled = Message.fromConfigurationSection("chat.placeholder-enabled", this.getLangConfiguration());
         placeholderChatDisabled = Message.fromConfigurationSection("chat.placeholder-disabled", this.getLangConfiguration());
         channelHelp = Message.fromConfigurationSection("channel.help", this.getLangConfiguration());
+        channelList = Message.fromConfigurationSection("channel.list", this.getLangConfiguration());
+        channelListEntry = Message.fromConfigurationSection("channel.list-entry", this.getLangConfiguration());
         channelJoin = Message.fromConfigurationSection("channel.join", this.getLangConfiguration());
         channelLeave = Message.fromConfigurationSection("channel.leave", this.getLangConfiguration());
         channelListen = Message.fromConfigurationSection("channel.listen", this.getLangConfiguration());

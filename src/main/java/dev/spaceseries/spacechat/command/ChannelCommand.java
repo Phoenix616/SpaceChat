@@ -9,6 +9,8 @@ import dev.spaceseries.spacechat.model.Channel;
 import dev.spaceseries.spacechat.model.ChatType;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
+
 @CommandPermission("space.chat.command.channel")
 @CommandAlias("channel")
 public class ChannelCommand extends SpaceChatCommand {
@@ -17,12 +19,32 @@ public class ChannelCommand extends SpaceChatCommand {
         super(plugin);
     }
 
+    @CommandPermission("space.chat.command.channel.list")
+    @CommandAlias("channel")
+    @Subcommand("list")
+    public class ListCommand extends BaseCommand {
+        @Default
+        @CatchUnknown
+        @HelpCommand
+        public void onDefault(Player player) {
+            // send list message
+            Collection<Channel> channels = plugin.getChannelManager().getAll().values();
+            Messages.getInstance(plugin).channelList.message(player, "%channelsamount%", String.valueOf(channels.size()));
+            for (Channel channel : channels) {
+                if (player.hasPermission(channel.getPermission())) {
+                    Messages.getInstance(plugin).channelListEntry.message(player, "%channel%", channel.getHandle());
+                }
+            }
+        }
+    }
+
     @CommandPermission("space.chat.command.channel.mute")
     @CommandAlias("channel")
     @Subcommand("mute")
     public class MuteCommand extends BaseCommand {
 
         @Default
+        @CommandCompletion("@channels")
         public void onMute(Player player, @Single String channel) {
             // get channel
             Channel applicable = plugin.getChannelManager().get(channel, null);
@@ -46,14 +68,6 @@ public class ChannelCommand extends SpaceChatCommand {
                 Messages.getInstance(plugin).channelMute.message(player, "%channel%", channel);
             });
         }
-
-        @Default
-        @CatchUnknown
-        @HelpCommand
-        public void onDefault(Player player) {
-            // send help message
-            Messages.getInstance(plugin).channelHelp.message(player);
-        }
     }
 
     @CommandPermission("space.chat.command.channel.listen")
@@ -62,6 +76,7 @@ public class ChannelCommand extends SpaceChatCommand {
     public class ListenCommand extends BaseCommand {
 
         @Default
+        @CommandCompletion("@channels")
         public void onListen(Player player, @Single String channel) {
             // get channel
             Channel applicable = plugin.getChannelManager().get(channel, null);
@@ -84,14 +99,6 @@ public class ChannelCommand extends SpaceChatCommand {
                 // send message
                 Messages.getInstance(plugin).channelListen.message(player, "%channel%", channel);
             });
-        }
-
-        @Default
-        @CatchUnknown
-        @HelpCommand
-        public void onDefault(Player player) {
-            // send help message
-            Messages.getInstance(plugin).channelHelp.message(player);
         }
     }
 
@@ -119,14 +126,6 @@ public class ChannelCommand extends SpaceChatCommand {
                 });
             });
         }
-
-        @Default
-        @CatchUnknown
-        @HelpCommand
-        public void onDefault(Player player) {
-            // send help message
-            Messages.getInstance(plugin).channelHelp.message(player);
-        }
     }
 
     @Subcommand("join")
@@ -135,6 +134,7 @@ public class ChannelCommand extends SpaceChatCommand {
     public class JoinCommand extends BaseCommand {
 
         @Default
+        @CommandCompletion("@channels")
         public void onJoin(Player player, @Single String channel) {
             // get channel
             Channel applicable = plugin.getChannelManager().get(channel, null);
@@ -158,14 +158,6 @@ public class ChannelCommand extends SpaceChatCommand {
                 Messages.getInstance(plugin).channelJoin.message(player, "%channel%", channel);
             });
         }
-
-        @Default
-        @CatchUnknown
-        @HelpCommand
-        public void onDefault(Player player) {
-            // send help message
-            Messages.getInstance(plugin).channelHelp.message(player);
-        }
     }
 
     @Subcommand("message|msg|talk")
@@ -174,6 +166,7 @@ public class ChannelCommand extends SpaceChatCommand {
     public class MessageCommand extends BaseCommand {
 
         @Default
+        @CommandCompletion("@channels")
         public void onMessage(Player player, @Single String channel, String message) {
             // get channel
             Channel applicable = plugin.getChannelManager().get(channel, null);
@@ -204,16 +197,8 @@ public class ChannelCommand extends SpaceChatCommand {
                 }
 
                 // send message to channel
-                plugin.getChannelManager().send(player, null, message, applicable);
+                plugin.getChannelManager().send(player, null, String.join(" ", message), applicable);
             });
-        }
-
-        @Default
-        @CatchUnknown
-        @HelpCommand
-        public void onDefault(Player player) {
-            // send help message
-            Messages.getInstance(plugin).channelHelp.message(player);
         }
     }
 

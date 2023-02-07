@@ -60,6 +60,10 @@ chat:
   placeholder-disabled:
   - "&cDisabled"
 channel:
+  list:
+    - "&aThe following %channelsamount% channels are available:"
+  list-entry:
+    - "&7- &e%channel%"
   join:
     - "&aYou &ejoined &7%channel%"
   leave:
@@ -74,6 +78,8 @@ channel:
     - "&cOops! You aren't allowed to interact with that channel!"
   help:
     - "&bSpaceChat &7&o(v2)&r &3channel help"
+    - "&f- &d/channel list"
+    - "&f-   &3List all available channels"
     - "&f- &d/channel join &7<channel>"
     - "&f-   &3Start talking in a specific channel"
     - "&f- &d/channel message &7<channel> <message>"

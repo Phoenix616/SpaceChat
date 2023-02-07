@@ -62,7 +62,7 @@ dependencies {
     implementation "de.themoep:minedown-adventure:1.7.2-SNAPSHOT"
 
     // acf
-    implementation "co.aikar:acf-bukkit:0.5.0-SNAPSHOT"
+    implementation "co.aikar:acf-bukkit:0.5.1-SNAPSHOT"
 
     // lettuce redis library
     implementation 'io.lettuce:lettuce-core:6.1.8.RELEASE'

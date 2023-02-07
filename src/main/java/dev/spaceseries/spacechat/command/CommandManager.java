@@ -3,6 +3,7 @@ package dev.spaceseries.spacechat.command;
 import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.MessageType;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
+import dev.spaceseries.spacechat.model.Channel;
 import dev.spaceseries.spacechat.model.ChatType;
 import org.bukkit.ChatColor;
 
@@ -42,5 +43,10 @@ public class CommandManager extends BukkitCommandManager {
                 c -> plugin.getUserManager().get(c.getPlayer().getUniqueId()).getIgnored().values());
         getCommandCompletions().registerAsyncCompletion("globalplayers",
                 c -> plugin.getServerSyncServiceManager().getDataService().getPlayers());
+        getCommandCompletions().registerAsyncCompletion("channels",
+                c -> plugin.getChannelManager().getAll().values().stream()
+                        .filter(channel -> c.getPlayer().hasPermission(channel.getPermission()))
+                        .map(Channel::getHandle)
+                        .collect(Collectors.toList()));
     }
 }
