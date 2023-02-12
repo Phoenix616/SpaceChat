@@ -1,14 +1,17 @@
 package dev.spaceseries.spacechat.command;
 
+import co.aikar.commands.BukkitCommandCompletionContext;
 import co.aikar.commands.BukkitCommandManager;
 import co.aikar.commands.MessageType;
 import dev.spaceseries.spacechat.SpaceChatPlugin;
 import dev.spaceseries.spacechat.model.Channel;
 import dev.spaceseries.spacechat.model.ChatType;
+import dev.spaceseries.spacechat.util.async.AsyncFetcher;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class CommandManager extends BukkitCommandManager {
@@ -37,12 +40,21 @@ public class CommandManager extends BukkitCommandManager {
                 new BroadcastMinimessageCommand(plugin)
         ).forEach(this::registerCommand);
 
+        AsyncFetcher<BukkitCommandCompletionContext, Collection<String>> ignoredFetcher = new AsyncFetcher<>(
+                c -> plugin.getUserManager().get(c.getPlayer().getUniqueId()).getIgnored().values(),
+                c -> plugin.getServer().getOnlinePlayers().stream()
+                        .filter(p -> c.getPlayer().canSee(p))
+                        .map(Player::getName).collect(Collectors.toList()));
+        AsyncFetcher<BukkitCommandCompletionContext, Collection<String>> globalPlayerFetcher = new AsyncFetcher<>(
+                c -> plugin.getServerSyncServiceManager().getDataService().getPlayers(),
+                c -> plugin.getServer().getOnlinePlayers().stream()
+                        .filter(p -> c.getPlayer().canSee(p))
+                        .map(Player::getName).collect(Collectors.toList()));
+
         getCommandCompletions().registerAsyncCompletion("chattypes",
                 c -> Arrays.stream(ChatType.values()).map(ChatType::name).map(String::toLowerCase).collect(Collectors.toList()));
-        getCommandCompletions().registerAsyncCompletion("ignored",
-                c -> plugin.getUserManager().get(c.getPlayer().getUniqueId()).getIgnored().values());
-        getCommandCompletions().registerAsyncCompletion("globalplayers",
-                c -> plugin.getServerSyncServiceManager().getDataService().getPlayers());
+        getCommandCompletions().registerAsyncCompletion("ignored", ignoredFetcher::fetch);
+        getCommandCompletions().registerAsyncCompletion("globalplayers", globalPlayerFetcher::fetch);
         getCommandCompletions().registerAsyncCompletion("channels",
                 c -> plugin.getChannelManager().getAll().values().stream()
                         .filter(channel -> c.getPlayer().hasPermission(channel.getPermission()))
