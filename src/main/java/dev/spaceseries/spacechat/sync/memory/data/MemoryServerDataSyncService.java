@@ -149,7 +149,7 @@ public class MemoryServerDataSyncService extends ServerDataSyncService {
     @Override
     public CompletableFuture<String> getPlayerServer(String username) {
         // the player will always be on the current server if they are online
-        return CompletableFuture.completedFuture(plugin.getServer().getPlayer(username) != null ? "local" : null);
+        return CompletableFuture.completedFuture(plugin.getServer().getPlayerExact(username) != null ? "local" : null);
     }
 
     @Override

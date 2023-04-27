@@ -379,7 +379,7 @@ public class ChatManager implements Manager {
         Component sentComponents = null;
         Component receivedComponents;
 
-        Player to = plugin.getServer().getPlayer(targetName);
+        Player to = plugin.getServer().getPlayerExact(targetName);
 
 
         // get chat message (formatted)

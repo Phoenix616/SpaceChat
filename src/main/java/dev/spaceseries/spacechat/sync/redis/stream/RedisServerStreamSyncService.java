@@ -158,7 +158,7 @@ public class RedisServerStreamSyncService extends ServerStreamSyncService {
         }
 
         // if player is online send it to them
-        Player to = plugin.getServer().getPlayer(chatPacket.getTargetName());
+        Player to = plugin.getServer().getPlayerExact(chatPacket.getTargetName());
         if (to != null) {
             if (chatPacket.getSender().equals(Identity.nil().uuid())) {
                 // message is error sent by plugin
